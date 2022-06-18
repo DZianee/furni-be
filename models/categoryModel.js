@@ -13,10 +13,6 @@ const categorySchema = new mongoose.Schema({
     required: [true, "Category name is required to have"],
     minlength: [5, "It must be at least 5 characters"],
   },
-  inStock: {
-    type: Number,
-    required: [true, "Number in stock must be stored"],
-  },
   productList: [
     {
       type: mongoose.Schema.Types.ObjectId,

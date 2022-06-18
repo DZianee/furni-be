@@ -28,12 +28,17 @@ const productController = {
     try {
       const imageName = req.file.filename;
       newProduct.productImg = imageName;
+
       const saveProduct = await newProduct.save();
       if (req.body.category) {
+        // const test = await productModel.countDocuments({
+        //   category: req.body.category,
+        // });
+        // await categoryModel.updateOne({ $set: { inStock: test } });
         const category = categoryModel.findById(req.body.category);
         await category.updateOne({ $push: { productList: saveProduct._id } });
-        console.log(category);
       }
+
       res.status(200).send({
         message: "Create new product successfully",
         data: saveProduct,
@@ -49,9 +54,11 @@ const productController = {
   getAllProducts: async (req, res) => {
     try {
       const getAllProducts = await productModel.find();
+      const totalProducts = await productModel.countDocuments();
       res.status(200).send({
         message: "Get all product successfully",
         data: getAllProducts,
+        totalProducts: totalProducts
       });
     } catch (error) {
       httpError.serverError(res, error);
@@ -127,11 +134,9 @@ const productController = {
       product = await productModel.findById(id);
 
       const category = categoryModel.find({ productList: id });
-      console.log(category)
       const removeProductFromCate = await category.updateMany(category, {
         $pull: { productList: id },
       });
-      console.log(removeProductFromCate);
 
       const removeProduct = await productModel.deleteOne({ _id: id });
       res

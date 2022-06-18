@@ -2,13 +2,13 @@ const router = require("express").Router();
 const categoryController = require("../controllers/categoryController")
 
 
-router.post("/", categoryController.newCate)
+router.post("/newCate", categoryController.newCate)
 
 router.get("/", categoryController.getAll)
 
-router.get("/:id", categoryController.getDetails)
+router.get("/cateDetails/:id", categoryController.getDetails)
 
-router.put("/:id", categoryController.updateCate)
+router.put("/updateCate/:id", categoryController.updateCate)
 
 router.delete("/:id", categoryController.deleteCate)
 

@@ -7,14 +7,15 @@ const categoryController = {
     const category = new categoryModel({
       code: req.body.code,
       name: req.body.name,
-      inStock: req.body.inStock,
       productList: req.body.productList,
     });
     try {
       const newCate = await category.save();
-      res
-        .status(200)
-        .send({ message: "New category is created", data: newCate });
+
+      res.status(200).send({
+        message: "New category is created",
+        data: newCate,
+      });
     } catch (error) {
       if (error.name == "ValidationError") {
         httpError.badRequest(res, error);
@@ -27,10 +28,23 @@ const categoryController = {
     try {
       const getAll = await categoryModel
         .find()
-        .populate("productList", "type name importQuantity");
-      res
-        .status(200)
-        .send({ message: "Get all categories successfully", data: getAll });
+        .populate(
+          "productList",
+          "name code importQuantity productImg price status"
+        );
+
+      //get length of productList array
+      const test = await categoryModel.aggregate([
+        {
+          $project: { inStock: { $size: "$productList" } },
+        },
+      ]);
+
+      res.status(200).send({
+        message: "Get all categories successfully",
+        data: getAll,
+        total: test,
+      });
     } catch (error) {
       httpError.serverError(res, error);
     }
@@ -60,7 +74,6 @@ const categoryController = {
       let cate = {
         code: req.body.code,
         name: req.body.name,
-        inStock: req.body.inStock,
       };
       const updateCate = await categoryModel.updateOne(
         { _id: req.params.id },
@@ -85,7 +98,7 @@ const categoryController = {
       cate = await categoryModel.find({ _id: req.params.id });
 
       const product = await productModel.find({ category: req.params.id });
-      console.log(product)
+      console.log(product);
       if (product === []) {
         res.status(400).send({
           message:

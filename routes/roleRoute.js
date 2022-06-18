@@ -2,13 +2,13 @@ const router = require("express").Router()
 const roleController = require("../controllers/roleController")
 
 
-router.post("/", roleController.addRole)
+router.post("/newRole", roleController.addRole)
 
 router.get("/", roleController.getAllRoles)
 
-router.get("/:id", roleController.getDetailsRole)
+router.get("/roleDeatils/:id", roleController.getDetailsRole)
 
-router.put("/:id", roleController.updateRole)
+router.put("/updateRole/:id", roleController.updateRole)
 
 router.delete("/:id", roleController.deleteRole)
 

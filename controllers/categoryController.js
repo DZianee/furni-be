@@ -1,5 +1,5 @@
 const categoryModel = require("../models/categoryModel");
-const productModel = require("../models/productModel")
+const productModel = require("../models/productModel");
 const httpError = require("../middleware/error");
 
 const categoryController = {
@@ -25,7 +25,9 @@ const categoryController = {
   },
   getAll: async (req, res) => {
     try {
-      const getAll = await categoryModel.find();
+      const getAll = await categoryModel
+        .find()
+        .populate("productList", "type name importQuantity");
       res
         .status(200)
         .send({ message: "Get all categories successfully", data: getAll });
@@ -82,14 +84,23 @@ const categoryController = {
     try {
       cate = await categoryModel.find({ _id: req.params.id });
 
-      const product = await productModel.find({ category: req.params.id })
-      if (product) {
-        httpError.badRequest.send({
-          message: "This category is being used, you are not allowed to remove it.",
+      const product = await productModel.find({ category: req.params.id });
+      console.log(product)
+      if (product === []) {
+        res.status(400).send({
+          message:
+            "This category is being used, you are not allowed to remove it.",
         });
+      } else {
+        categoryModel.deleteOne(
+          {
+            _id: req.params.id,
+          },
+          () => {
+            console.log("delete successfully");
+          }
+        );
       }
-      const removeCate = await categoryModel.deleteOne({ _id: req.params.id });
-      res.status(200).send({ message: "Delete is done", data: removeCate });
     } catch (error) {
       if (cate == null) {
         httpError

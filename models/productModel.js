@@ -11,6 +11,9 @@ const productSchema = new mongoose.Schema({
     uppercase: true,
     required: [true, "Product code is required"],
   },
+  productImg: {
+    type: String,
+  },
   price: {
     type: Number,
     required: [true, "Product price is required"],

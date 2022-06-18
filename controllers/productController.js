@@ -1,10 +1,11 @@
 const productModel = require("../models/productModel");
 const categoryModel = require("../models/categoryModel");
+const fs = require("fs");
 const httpError = require("../middleware/error");
 
 const productController = {
   newProduct: async (req, res) => {
-    const newProduct = new productModel({
+    let newProduct = new productModel({
       name: req.body.name,
       code: req.body.code,
       price: req.body.price,
@@ -21,10 +22,18 @@ const productController = {
         length: req.body.length,
       },
       category: req.body.category,
-      //   review: req.body.review,
+      review: req.body.review,
+      productImg: req.body.productImg,
     });
     try {
+      const imageName = req.file.filename;
+      newProduct.productImg = imageName;
       const saveProduct = await newProduct.save();
+      if (req.body.category) {
+        const category = categoryModel.findById(req.body.category);
+        await category.updateOne({ $push: { productList: saveProduct._id } });
+        console.log(category);
+      }
       res.status(200).send({
         message: "Create new product successfully",
         data: saveProduct,
@@ -69,6 +78,8 @@ const productController = {
   updateProduct: async (req, res) => {
     let id = req.params.id;
     let product;
+    let newImg;
+
     try {
       product = await productModel.findById(id);
 
@@ -86,13 +97,19 @@ const productController = {
         height: req.body.height,
         depth: req.body.depth,
         length: req.body.length,
-
         category: req.body.category,
+        review: req.body.review,
+        productImg: req.body.productImg,
       };
+      if (req.file) {
+        newImg = req.file.filename;
+        updateProduct.productImg = newImg;
+      }
       const updatedProduct = await productModel.updateOne(
         { _id: id },
         { $set: updateProduct }
       );
+      console.log(updatedProduct);
     } catch (error) {
       if (product == null) {
         httpError
@@ -109,9 +126,10 @@ const productController = {
     try {
       product = await productModel.findById(id);
 
-      const category = await categoryModel.find({ productlist: id });
+      const category = categoryModel.find({ productList: id });
+      console.log(category)
       const removeProductFromCate = await category.updateMany(category, {
-        $pull: { productlist: req.params.id },
+        $pull: { productList: id },
       });
       console.log(removeProductFromCate);
 

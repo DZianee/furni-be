@@ -4,6 +4,9 @@ const morgan = require("morgan");
 const mongoose = require("mongoose");
 const helmet = require("helmet");
 const cors = require("cors");
+const bodyParser = require("body-parser")
+const multer = require("multer");
+
 
 const app = express();
 dotenv.config();
@@ -17,9 +20,11 @@ const productRoute = require("./routes/productRoute")
 
 // usage
 app.use(cors());
+app.use(bodyParser.json())
 app.use(morgan("combined"));
 app.use(helmet());
 app.use(express.json());
+app.use(express.static("../uploads"))
 
 // db
 mongoose.connect(process.env.MONGO_DB);

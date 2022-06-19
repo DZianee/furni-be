@@ -29,7 +29,7 @@ const productSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    default: "Active",
+    default: "IN STOCK",
   },
   type: {
     type: String,

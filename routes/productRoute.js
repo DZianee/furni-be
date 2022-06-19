@@ -13,7 +13,7 @@ router.post("/newProduct", imgUpload, productController.newProduct)
 
 router.put("/updateProduct/:id", imgUpload,productController.updateProduct)
 
-router.delete("/:id", productController.deleteProduct)
+router.delete("/:id", imgUpload,productController.deleteProduct)
 
 
 module.exports = router;

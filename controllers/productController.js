@@ -58,7 +58,7 @@ const productController = {
       res.status(200).send({
         message: "Get all product successfully",
         data: getAllProducts,
-        totalProducts: totalProducts
+        totalProducts: totalProducts,
       });
     } catch (error) {
       httpError.serverError(res, error);
@@ -89,7 +89,7 @@ const productController = {
 
     try {
       product = await productModel.findById(id);
-
+      console.log(product);
       let updateProduct = {
         name: req.body.name,
         code: req.body.code,
@@ -110,8 +110,15 @@ const productController = {
       };
       if (req.file) {
         newImg = req.file.filename;
-        updateProduct.productImg = newImg;
+        try {
+          fs.unlinkSync("./uploads/" + product.productImg);
+        } catch (error) {
+          console.log(error);
+        }
+      } else {
+        newImg = product.productImg;
       }
+      updateProduct.productImg = newImg;
       const updatedProduct = await productModel.updateOne(
         { _id: id },
         { $set: updateProduct }
@@ -127,21 +134,27 @@ const productController = {
       }
     }
   },
-  deleteProduct: async (req, res) => {
+  deleteProduct: async (req, res, next) => {
     let id = req.params.id;
     let product;
     try {
       product = await productModel.findById(id);
 
+      // remove product from cate
       const category = categoryModel.find({ productList: id });
       const removeProductFromCate = await category.updateMany(category, {
         $pull: { productList: id },
       });
 
-      const removeProduct = await productModel.deleteOne({ _id: id });
-      res
-        .status(200)
-        .send({ message: "Remove successfully", data: removeProduct });
+      const removeProduct = await productModel.findByIdAndDelete(id);
+      if (removeProduct.productImg != "") {
+        try {
+          fs.unlinkSync("./uploads/" + removeProduct.productImg);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      res.status(200).send({ message: "Remove successfully" });
     } catch (error) {
       if (product == null) {
         httpError

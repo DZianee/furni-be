@@ -6,7 +6,7 @@ router.post("/newRole", roleController.addRole)
 
 router.get("/", roleController.getAllRoles)
 
-router.get("/roleDeatils/:id", roleController.getDetailsRole)
+router.get("/roleDetails/:id", roleController.getDetailsRole)
 
 router.put("/updateRole/:id", roleController.updateRole)
 

@@ -5,10 +5,10 @@ const httpErrorRequest = {
     badRequest: (res, error)=>{
         res.status(400).send({message: error.message.split(",")})
     },
-    notFound: (res)=>{
-        res.status(404)
+    notFound: (res, error, text)=>{
+        res.status(404).send({message: `This ${text} cannot be found`})
     },
-    notAuth: (res, error)=>{
+    notAuth: (res)=>{
         res.status(401).send({message: "You are not authenticated"})
     },
     forbidden: (res, error)=>{

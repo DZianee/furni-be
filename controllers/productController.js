@@ -74,9 +74,7 @@ const productController = {
         .send({ message: "Get details successfully", data: productDetails });
     } catch (error) {
       if (productDetails == null) {
-        httpError
-          .notFound(res)
-          .send({ message: "This product is not existed" });
+        httpError.notFound(res, error, "product");
       } else {
         httpError.serverError(res, error);
       }
@@ -126,9 +124,7 @@ const productController = {
       console.log(updatedProduct);
     } catch (error) {
       if (product == null) {
-        httpError
-          .notFound(res)
-          .send({ message: "This product is not existed" });
+        httpError.notFound(res, error, "product");
       } else {
         httpError.serverError(res, error);
       }
@@ -157,9 +153,7 @@ const productController = {
       res.status(200).send({ message: "Remove successfully" });
     } catch (error) {
       if (product == null) {
-        httpError
-          .notFound(res)
-          .send({ message: "This product is not existed" });
+        httpError.notFound(res, error, "product");
       } else {
         httpError.serverError(res, error);
       }

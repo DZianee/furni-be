@@ -38,7 +38,7 @@ const roleController = {
         .send({ message: "get details role successfully", data: role });
     } catch (error) {
       if (role == null) {
-        httpError.notFound(res).send({ message: "This role is not existed" });
+        httpError.notFound(res, error, "role");
       } else {
         httpError.serverError(res, error);
       }
@@ -62,7 +62,7 @@ const roleController = {
         .send({ message: "update successfully", data: updateRole });
     } catch (error) {
       if (role == null) {
-        httpError.notFound(res).send({ message: "This role is not existed" });
+        httpError.notFound(res, error, "role");
       } else {
         httpError.serverError(res, error);
       }
@@ -85,7 +85,7 @@ const roleController = {
       //   }
     } catch (error) {
       if (role == null) {
-        httpError.notFound(res).send({ message: "This role is not existed" });
+        httpError.notFound(res, error, "role");
       } else {
         httpError.serverError(res, error);
       }

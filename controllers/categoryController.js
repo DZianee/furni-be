@@ -58,9 +58,7 @@ const categoryController = {
         .send({ message: "Get details successfully", data: getDetails });
     } catch (error) {
       if (getDetails == null) {
-        httpError
-          .notFound(res)
-          .send({ message: "This category is not existed" });
+        httpError.notFound(res, error, "category");
       } else {
         httpError.serverError(res, error);
       }
@@ -84,9 +82,7 @@ const categoryController = {
         .send({ message: "Update category successfully", data: cate });
     } catch (error) {
       if (getDetails == null) {
-        httpError
-          .notFound(res)
-          .send({ message: "This category is not existed" });
+        httpError.notFound(res, error, "category");
       } else {
         httpError.serverError(res, error);
       }
@@ -116,9 +112,7 @@ const categoryController = {
       }
     } catch (error) {
       if (cate == null) {
-        httpError
-          .notFound(res)
-          .send({ message: "This category is not existed" });
+        httpError.notFound(res, error, "category");
       } else {
         httpError.serverError(res, error);
       }

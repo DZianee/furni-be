@@ -5,7 +5,6 @@ const mongoose = require("mongoose");
 const helmet = require("helmet");
 const cors = require("cors");
 const bodyParser = require("body-parser")
-const multer = require("multer");
 
 
 const app = express();
@@ -16,6 +15,8 @@ const port = process.env.PORT || 2371;
 const categoryRoute = require("./routes/cateRoute");
 const roleRoute = require("./routes/roleRoute")
 const productRoute = require("./routes/productRoute")
+const userRoute = require("./routes/userRoute")
+const orderRoute = require("./routes/orderRoute")
 
 
 // usage
@@ -41,6 +42,8 @@ db.on("open", () => {
 app.use("/api/Category", categoryRoute);
 app.use("/api/Role", roleRoute);
 app.use("/api/Product", productRoute);
+app.use("/api/User", userRoute);
+app.use("/api/Order", orderRoute);
 
 
 

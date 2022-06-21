@@ -109,7 +109,7 @@ const productController = {
       if (req.file) {
         newImg = req.file.filename;
         try {
-          fs.unlinkSync("./uploads/" + product.productImg);
+          fs.unlinkSync("./resource/img/uploads/" + product.productImg);
         } catch (error) {
           console.log(error);
         }
@@ -145,7 +145,7 @@ const productController = {
       const removeProduct = await productModel.findByIdAndDelete(id);
       if (removeProduct.productImg != "") {
         try {
-          fs.unlinkSync("./uploads/" + removeProduct.productImg);
+          fs.unlinkSync("./resource/img/uploads/" + removeProduct.productImg);
         } catch (error) {
           console.log(error);
         }

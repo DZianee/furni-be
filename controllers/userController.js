@@ -8,6 +8,7 @@ const userController = {
     const salt = await bcrypt.genSalt(10);
     const hashed = await bcrypt.hash(req.body.password, salt);
     const user = new userModel({
+      avatar: req.body.avatar,
       name: {
         firstname: req.body.firstname,
         lastname: req.body.lastname,
@@ -26,6 +27,8 @@ const userController = {
       order: req.body.order,
     });
     try {
+      const avatarName = req.file.filename;
+      user.avatar = avatarName;
       const newUser = await user.save();
       res.status(200).send({ message: "New user is created", data: newUser });
     } catch (error) {
@@ -82,6 +85,7 @@ const userController = {
         const salt = await bcrypt.genSalt(10);
         const hashed = await bcrypt.hash(req.body.password, salt);
         const user = new userModel({
+          avatar: req.body.avatar,
           name: {
             firstname: req.body.firstname,
             lastname: req.body.lastname,
@@ -98,6 +102,8 @@ const userController = {
           role: req.body.role,
           status: req.body.status,
         });
+        const avatarName = req.file.filename;
+        user.avatar = avatarName;
         const newUser = await user.save();
         res.status(200).send({ message: "New user created", data: newUser });
       }
@@ -141,7 +147,7 @@ const userController = {
     let id = req.params.id;
     let getDetails;
     try {
-      getDetails = await userModel.findById(id);
+      getDetails = await userModel.findById(id).populate("order");
       res.status(200).send({
         message: "Get user details successfully",
         data: {

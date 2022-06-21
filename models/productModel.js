@@ -64,10 +64,10 @@ const productSchema = new mongoose.Schema({
   category: {
     type: String,
   },
-  review: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Review_Model",
-  },
+  // review: {
+  //   type: [reviewSchema],
+  //   ref: "Review_Model",
+  // },
 });
 
 module.exports = mongoose.model("Product_Model", productSchema);

@@ -5,6 +5,10 @@ const orderSchema = new mongoose.Schema({
     type: Date,
     default: Date.now(),
   },
+  totalBill: {
+    type: Number,
+    required: [true, "The order has to deliver a total's bill"],
+  },
   paymentMethod: {
     type: String,
     required: [true, "It must be contained payment method for order bill"],
@@ -23,8 +27,31 @@ const orderSchema = new mongoose.Schema({
   },
   cart: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Product_Model",
+      product: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product_Model",
+        required: true,
+      },
+      quantity: {
+        type: Number,
+        required: true,
+      },
+      amount: {
+        type: Number,
+        required: true,
+      },
+      color: {
+        type: [String],
+        required: true,
+      },
+      productImg: {
+        type: String,
+        required: true,
+      },
+      name: {
+        type: String,
+        required: true,
+      },
     },
   ],
 });

@@ -1,12 +1,14 @@
 const router = require("express").Router();
 const userController = require("../controllers/userController");
 const authMiddlewareController = require("../middleware/auth");
+const { userAvatar } = require("../middleware/mutler");
 
-router.post("/newUser", userController.newUser);
+
+router.post("/newUser", userAvatar,userController.newUser);
 
 router.post("/login", userController.userLogin);
 
-router.post("/register", userController.userRegister);
+router.post("/register", userAvatar,userController.userRegister);
 
 router.post("/refreshToken", userController.refreshToken);
 

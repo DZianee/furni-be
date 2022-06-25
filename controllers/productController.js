@@ -2,6 +2,7 @@ const productModel = require("../models/productModel");
 const categoryModel = require("../models/categoryModel");
 const fs = require("fs");
 const httpError = require("../middleware/error");
+const APIfeatures = require("../lib/features");
 
 const productController = {
   newProduct: async (req, res) => {
@@ -52,13 +53,29 @@ const productController = {
     }
   },
   getAllProducts: async (req, res) => {
+    let cateId = req.params.categoryId;
     try {
-      const getAllProducts = await productModel.find();
       const totalProducts = await productModel.countDocuments();
+      const pageSize = 6;
+      const pageTotals = Math.ceil(
+        (await productModel.find()).length / pageSize
+      );
+
+      const features = new APIfeatures(
+        productModel.find({ category: cateId }),
+        req.query
+      )
+        .pagination(pageSize)
+        .sorting()
+        .searching()
+        .filtering();
+
+      const getAllProducts = await features.query;
       res.status(200).send({
         message: "Get all product successfully",
         data: getAllProducts,
         totalProducts: totalProducts,
+        pageTotals: pageTotals,
       });
     } catch (error) {
       httpError.serverError(res, error);

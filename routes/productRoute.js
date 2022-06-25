@@ -4,7 +4,7 @@ const productReviewController = require("../controllers/product.review.controlle
 const reviewReactController = require("../controllers/review.react.controller")
 const { uploadImg} = require("../middleware/mutler");
 
-router.get("/", productController.getAllProducts);
+router.get("/:categoryId", productController.getAllProducts);
 
 router.get("/productDetails/:id", productController.getProductDetails);
 

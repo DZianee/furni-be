@@ -26,15 +26,10 @@ const categoryController = {
   },
   getAll: async (req, res) => {
     try {
-      const getAll = await categoryModel
-        .find()
-        .populate(
-          "productList",
-          "name code importQuantity productImg price status"
-        );
+      const getAll = await categoryModel.find();
 
       //get length of productList array
-      const test = await categoryModel.aggregate([
+      const total = await categoryModel.aggregate([
         {
           $project: { inStock: { $size: "$productList" } },
         },
@@ -43,7 +38,7 @@ const categoryController = {
       res.status(200).send({
         message: "Get all categories successfully",
         data: getAll,
-        total: test,
+        total: total,
       });
     } catch (error) {
       httpError.serverError(res, error);
@@ -52,10 +47,20 @@ const categoryController = {
   getDetails: async (req, res) => {
     let getDetails;
     try {
-      getDetails = await categoryModel.find({ _id: req.params.id });
-      res
-        .status(200)
-        .send({ message: "Get details successfully", data: getDetails });
+      getDetails = await categoryModel
+        .findById(req.params.id)
+        .populate("productList", "name code type");
+      const total = await categoryModel.aggregate([
+        {
+          $project: { inStock: { $size: "$productList" } },
+        },
+      ]);
+
+      res.status(200).send({
+        message: "Get details successfully",
+        data: getDetails,
+        total: total,
+      });
     } catch (error) {
       if (getDetails == null) {
         httpError.notFound(res, error, "category");

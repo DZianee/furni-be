@@ -43,7 +43,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Role_Models",
+      ref: "Role_Model",
       required: [true, "Role is required"],
       default: "Default user",
     },

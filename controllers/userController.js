@@ -2,6 +2,7 @@ const userModel = require("../models/userModel");
 const httpErrors = require("../middleware/error");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const APIfeatures = require("../lib/features");
 
 const userController = {
   newUser: async (req, res) => {
@@ -134,11 +135,23 @@ const userController = {
     );
   },
   getAllUsers: async (req, res) => {
+    let roleId = req.query.roleId;
+    let getAll;
     try {
-      const getAll = await userModel.find();
+      const pageSize = 6;
+      const pageTotals = Math.ceil((await userModel.find()).length / pageSize);
+
+      const features = new APIfeatures(userModel.find(), req.query)
+        .pagination(pageSize)
+        .sorting()
+        .searching()
+        .filtering();
+
+      getAll = await features.query.populate("role", "name");
+
       res
         .status(200)
-        .send({ message: "Get all users successfully", data: getAll });
+        .send({ message: "Get all users successfully", data: getAll, pageTotals: pageTotals });
     } catch (error) {
       httpErrors.serverError(res, error);
     }
@@ -163,7 +176,7 @@ const userController = {
             district: getDetails.address.district,
             city: getDetails.address.city,
           },
-          order: getDetails.order
+          order: getDetails.order,
         },
       });
     } catch (error) {

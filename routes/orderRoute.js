@@ -1,24 +1,25 @@
 const router = require("express").Router();
 const orderController = require("../controllers/orderController");
+const authMiddlewareController = require("../middleware/auth");
 
+const auth = authMiddlewareController.verifyToken;
 
-router.post("/newOrder", orderController.newOrder);
+router.post("/newOrder", auth, orderController.newOrder);
 
-router.get("/", orderController.getAllOrders);
+router.get("/", auth, orderController.getAllOrders);
 
-router.get("/newOrders", orderController.getNewOrders);
+router.get("/newOrders", auth, orderController.getNewOrders);
 
-router.get("/deliveryOrders", orderController.getDeliveryOrders);
+router.get("/deliveryOrders", auth, orderController.getDeliveryOrders);
 
-router.get("/completedOrders", orderController.getCompletedOrders);
+router.get("/completedOrders", auth, orderController.getCompletedOrders);
 
-router.get("/cancelledOrders", orderController.getCancelledOrders);
+router.get("/cancelledOrders", auth, orderController.getCancelledOrders);
 
-router.delete("/:id", orderController.deleteOrder);
+router.delete("/:id", auth, orderController.deleteOrder);
 
-router.get("/orderDetails/:id", orderController.getDetails);
+router.get("/orderDetails/:id", auth, orderController.getDetails);
 
-router.put("/updateOrder/:id", orderController.updateOrder);
-
+router.put("/updateOrder/:id", auth, orderController.updateOrder);
 
 module.exports = router;

@@ -1,16 +1,17 @@
-const router = require("express").Router()
-const roleController = require("../controllers/roleController")
+const router = require("express").Router();
+const roleController = require("../controllers/roleController");
+const authMiddlewareController = require("../middleware/auth");
 
+const auth = authMiddlewareController.verifyToken;
 
-router.post("/newRole", roleController.addRole)
+router.post("/newRole", auth, roleController.addRole);
 
-router.get("/", roleController.getAllRoles)
+router.get("/", auth, roleController.getAllRoles);
 
-router.get("/roleDetails/:id", roleController.getDetailsRole)
+router.get("/roleDetails/:id", auth, roleController.getDetailsRole);
 
-router.put("/updateRole/:id", roleController.updateRole)
+router.put("/updateRole/:id", auth, roleController.updateRole);
 
-router.delete("/:id", roleController.deleteRole)
+router.delete("/:id", auth, roleController.deleteRole);
 
-
-module.exports = router
+module.exports = router;

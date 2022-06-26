@@ -1,33 +1,55 @@
 const router = require("express").Router();
 const productController = require("../controllers/productController");
-const productReviewController = require("../controllers/product.review.controller")
-const reviewReactController = require("../controllers/review.react.controller")
-const { uploadImg} = require("../middleware/mutler");
+const productReviewController = require("../controllers/product.review.controller");
+const reviewReactController = require("../controllers/review.react.controller");
+const authMiddlewareController = require("../middleware/auth");
+const { uploadImg } = require("../middleware/mutler");
 
-router.get("/:categoryId", productController.getAllProducts);
+const auth = authMiddlewareController.verifyToken;
 
-router.get("/productDetails/:id", productController.getProductDetails);
+//product
+router.get("/:categoryId", auth, productController.getAllProducts);
 
-router.post("/newProduct", uploadImg, productController.newProduct);
+router.get("/productDetails/:id", auth, productController.getProductDetails);
 
-router.put("/updateProduct/:id", uploadImg, productController.updateProduct);
+router.post("/newProduct", auth, uploadImg, productController.newProduct);
 
-router.delete("/:id", uploadImg, productController.deleteProduct);
+router.put(
+  "/updateProduct/:id",
+  auth,
+  uploadImg,
+  productController.updateProduct
+);
+
+router.delete("/:id", auth, uploadImg, productController.deleteProduct);
 
 //review
 
-router.post("/productDetails/:id/Review", productReviewController.addReview)
+router.post(
+  "/productDetails/:id/Review",
+  auth,
+  productReviewController.addReview
+);
 
-router.put("/productDetails/:id/Review", productReviewController.updateReview)
+router.put(
+  "/productDetails/:id/Review",
+  auth,
+  productReviewController.updateReview
+);
 
-router.delete("/productDetails/:id/Review", productReviewController.deleteReview)
+router.delete(
+  "/productDetails/:id/Review",
+  productReviewController.deleteReview
+);
 
 //React
 
-router.post("/productDetails/:id/React", reviewReactController.addReact)
+router.post("/productDetails/:id/React", auth, reviewReactController.addReact);
 
-router.delete("/productDetails/:id/React", reviewReactController.deleteReact)
-
-
+router.delete(
+  "/productDetails/:id/React",
+  auth,
+  reviewReactController.deleteReact
+);
 
 module.exports = router;

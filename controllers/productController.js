@@ -56,13 +56,14 @@ const productController = {
     let cateId = req.params.categoryId;
     try {
       const totalProducts = await productModel.countDocuments();
-      const pageSize = 6;
+      const pageSize = req.query.pageSize;
       const pageTotals = Math.ceil(
         (await productModel.find()).length / pageSize
       );
 
       const features = new APIfeatures(
-        productModel.find({ category: cateId }),
+        productModel.find({ category: cateId })
+        ,
         req.query
       )
         .pagination(pageSize)

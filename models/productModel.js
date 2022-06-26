@@ -82,13 +82,4 @@ productSchema.index({
   status: "text",
 });
 
-const Product_Model = mongoose.model("Product_Model", productSchema);
-
-Product_Model.createIndexes({
-  name: "text",
-  code: "text",
-  type: "text",
-  status: "text",
-});
-
-module.exports = Product_Model;
+module.exports = mongoose.model("Product_Model", productSchema);

@@ -10,10 +10,8 @@ const userController = {
     const hashed = await bcrypt.hash(req.body.password, salt);
     const user = new userModel({
       avatar: req.body.avatar,
-      name: {
-        firstname: req.body.firstname,
-        lastname: req.body.lastname,
-      },
+      firstname: req.body.firstname,
+      lastname: req.body.lastname,
       email: req.body.email,
       password: hashed,
       phone: req.body.phone,
@@ -54,6 +52,8 @@ const userController = {
         res.status(404).send({ message: "Password is wrong" });
       }
       if (user && validPassword) {
+        user.lastLogin = Date.now();
+        await user.save();
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET_CODE, {
           expiresIn: "10m",
         });
@@ -68,6 +68,7 @@ const userController = {
           message: "Login verified",
           data: {
             email: user.email,
+            lastLogin: user.lastLogin,
             token: token,
             refreshToken: refreshToken,
           },
@@ -87,10 +88,8 @@ const userController = {
         const hashed = await bcrypt.hash(req.body.password, salt);
         const user = new userModel({
           avatar: req.body.avatar,
-          name: {
-            firstname: req.body.firstname,
-            lastname: req.body.lastname,
-          },
+          firstname: req.body.firstname,
+          lastname: req.body.lastname,
           email: req.body.email,
           password: hashed,
           phone: req.body.phone,
@@ -134,14 +133,23 @@ const userController = {
       }
     );
   },
-  getAllUsers: async (req, res) => {
-    let roleId = req.query.roleId;
+  getAllStaff: async (req, res) => {
+    let roleId = req.params.customerId;
     let getAll;
     try {
-      const pageSize = 6;
-      const pageTotals = Math.ceil((await userModel.find()).length / pageSize);
+      const totalUsers = await userModel.countDocuments({
+        role: { $ne: roleId },
+      });
 
-      const features = new APIfeatures(userModel.find(), req.query)
+      const pageSize = 6;
+      const pageTotals = Math.ceil(
+        (await userModel.find({ role: { $ne: roleId } })).length / pageSize
+      );
+
+      const features = new APIfeatures(
+        userModel.find({ role: { $ne: roleId } }),
+        req.query
+      )
         .pagination(pageSize)
         .sorting()
         .searching()
@@ -149,13 +157,46 @@ const userController = {
 
       getAll = await features.query.populate("role", "name");
 
-      res
-        .status(200)
-        .send({ message: "Get all users successfully", data: getAll, pageTotals: pageTotals });
+      res.status(200).send({
+        message: "Get all staffs successfully",
+        data: getAll,
+        totalUsers: totalUsers,
+        pageTotals: pageTotals,
+      });
     } catch (error) {
       httpErrors.serverError(res, error);
     }
   },
+  getAllCustomers: async (req, res) => {
+    let roleId = req.params.roleId;
+    let getAll;
+    try {
+      const pageSize = 6;
+      const pageTotals =
+        Math.ceil((await userModel.find({ role: roleId })).length / pageSize) ||
+        1;
+
+      const features = new APIfeatures(
+        userModel.find({ role: roleId }),
+        req.query
+      )
+        .pagination(pageSize)
+        .sorting()
+        .searching()
+        .filtering();
+
+      getAll = await features.query.populate("role", "name");
+
+      res.status(200).send({
+        message: "Get all customers successfully",
+        data: getAll,
+        pageTotals: pageTotals,
+      });
+    } catch (error) {
+      httpErrors.serverError(res, error);
+    }
+  },
+
   getDetailsUser: async (req, res) => {
     let id = req.params.id;
     let getDetails;
@@ -164,10 +205,8 @@ const userController = {
       res.status(200).send({
         message: "Get user details successfully",
         data: {
-          name: {
-            firstname: getDetails.name.firstname,
-            lastname: getDetails.name.lastname,
-          },
+          firstname: getDetails.firstname,
+          lastname: getDetails.lastname,
           email: getDetails.email,
           phone: getDetails.phone,
           address: {
@@ -199,10 +238,8 @@ const userController = {
         const salt = await bcrypt.genSalt(10);
         const hashed = await bcrypt.hash(req.body.password, salt);
         user = {
-          name: {
-            firstname: req.body.firstname,
-            lastname: req.body.lastname,
-          },
+          firstname: req.body.firstname,
+          lastname: req.body.lastname,
           email: req.body.email,
           password: hashed,
           phone: req.body.phone,
@@ -217,10 +254,8 @@ const userController = {
         };
       } else {
         user = {
-          name: {
-            firstname: req.body.firstname,
-            lastname: req.body.lastname,
-          },
+          firstname: req.body.firstname,
+          lastname: req.body.lastname,
           email: req.body.email,
           phone: req.body.phone,
           address: {

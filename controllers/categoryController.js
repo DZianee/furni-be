@@ -99,7 +99,6 @@ const categoryController = {
       cate = await categoryModel.find({ _id: req.params.id });
 
       const product = await productModel.find({ category: req.params.id });
-      console.log(product);
       if (product === []) {
         res.status(400).send({
           message:

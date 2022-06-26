@@ -4,6 +4,7 @@ const reactSchema = require("./likeSchema");
 const reviewSchema = new mongoose.Schema({
   comment: {
     type: String,
+    required: true
   },
   dateCreated: {
     type: Date,
@@ -12,6 +13,7 @@ const reviewSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User_Model",
+    required: true
   },
   rating: {
     type: String,

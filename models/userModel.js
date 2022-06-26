@@ -2,16 +2,17 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
-    avatar: {
-      type:String
+    lastLogin: {
+      type: Date
     },
-    name: {
-      firstname: {
-        type: String,
-      },
-      lastname: {
-        type: String,
-      },
+    avatar: {
+      type: String,
+    },
+    firstname: {
+      type: String,
+    },
+    lastname: {
+      type: String,
     },
     email: {
       type: String,
@@ -63,4 +64,15 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("User_Model", userSchema);
+userSchema.index({
+  firstname: "text",
+  lastname: "text",
+  email: "text",
+  phone: "text",
+  status: "text",
+});
+
+const User_Model = mongoose.model("User_Model", userSchema);
+
+
+module.exports = User_Model;

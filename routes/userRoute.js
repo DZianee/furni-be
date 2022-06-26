@@ -12,9 +12,11 @@ router.post("/register", userAvatar,userController.userRegister);
 
 router.post("/refreshToken", userController.refreshToken);
 
-router.get("/", userController.getAllUsers);
+router.get("/Customer/:roleId", userController.getAllCustomers);
 
-router.get("/userDetails/:id", userController.getDetailsUser);
+router.get("/Staff/:customerId", userController.getAllStaff);
+
+router.get("/userDetails/Staff/:id", userController.getDetailsUser);
 
 router.put("/updateUser/:id", userController.updateUser);
 

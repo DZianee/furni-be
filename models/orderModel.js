@@ -9,9 +9,18 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     required: [true, "The order has to deliver a total's bill"],
   },
-  paymentMethod: {
-    type: String,
-    required: [true, "It must be contained payment method for order bill"],
+  payment: {
+    transactionID: {
+      type: String,
+    },
+    paymentMethod: {
+      type: String,
+      required: [true, "It must be contained payment method for order bill"],
+    },
+    payStatus: {
+      type: String,
+      default: "Unpaid",
+    }
   },
   status: {
     type: String,
@@ -55,5 +64,13 @@ const orderSchema = new mongoose.Schema({
     },
   ],
 });
+
+orderSchema.index({
+  user: "text",
+  process: "text",
+  status: "text",
+  dateCreate: "text",
+});
+
 
 module.exports = mongoose.model("Order_Model", orderSchema);

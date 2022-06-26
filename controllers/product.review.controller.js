@@ -86,6 +86,7 @@ const productReviewController = {
         httpErrors.notFound(res, error, "product");
       } else {
         httpErrors.serverError(res, error);
+        console.log(error)
       }
     }
   },

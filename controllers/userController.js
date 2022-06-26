@@ -55,13 +55,13 @@ const userController = {
         user.lastLogin = Date.now();
         await user.save();
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET_CODE, {
-          expiresIn: "10m",
+          expiresIn: "2h",
         });
         const refreshToken = jwt.sign(
           { id: user.id },
           process.env.JWT_SECRET_REFRESHCODE,
           {
-            expiresIn: "2m",
+            expiresIn: "1d",
           }
         );
         res.status(200).send({
@@ -121,7 +121,7 @@ const userController = {
           httpErrors.badRequest(res, error);
         } else {
           const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET_CODE, {
-            expiresIn: "1m",
+            expiresIn: "2h",
           });
           let refreshToken = req.body.refreshToken;
           res.status(200).send({

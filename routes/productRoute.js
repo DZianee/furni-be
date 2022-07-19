@@ -10,6 +10,8 @@ const auth = authMiddlewareController.verifyToken;
 //product
 router.get("/:categoryId", auth, productController.getAllProducts);
 
+router.get("/", auth, productController.getAll);
+
 router.get("/productDetails/:id", auth, productController.getProductDetails);
 
 router.post("/newProduct", auth, uploadImg, productController.newProduct);
@@ -31,14 +33,20 @@ router.post(
   productReviewController.addReview
 );
 
+router.get(
+  "/productDetails/:id/Review/:reviewId",
+  auth,
+  productReviewController.detailsReview
+);
+
 router.put(
-  "/productDetails/:id/Review",
+  "/productDetails/:id/Review/:reviewId",
   auth,
   productReviewController.updateReview
 );
 
 router.delete(
-  "/productDetails/:id/Review",
+  "/productDetails/:id/Review/:reviewId",
   productReviewController.deleteReview
 );
 

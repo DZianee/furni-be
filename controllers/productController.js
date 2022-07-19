@@ -30,6 +30,9 @@ const productController = {
       const imageName = req.file.filename;
       newProduct.productImg = imageName;
 
+      const string = req.body.color;
+      const arr = string.split(",");
+      newProduct.color = arr;
       const saveProduct = await newProduct.save();
       if (req.body.category) {
         // const test = await productModel.countDocuments({
@@ -52,32 +55,86 @@ const productController = {
       }
     }
   },
+  getAll: async (req, res) => {
+    try {
+      const pageSize = 6;
+      const pageTotals =
+        Math.ceil((await productModel.find()).length / pageSize) || 1;
+      const feature = new APIfeatures(productModel.find(), req.query)
+        .sorting()
+        .searching()
+        .filtering()
+        .pagination(pageSize);
+      const product = await feature.query;
+      res.status(200).send({
+        message: "get all products in furni successfully",
+        data: product,
+        pageTotals: pageTotals,
+      });
+    } catch (error) {
+      httpError.serverError(res, error);
+    }
+  },
   getAllProducts: async (req, res) => {
     let cateId = req.params.categoryId;
     try {
-      const totalProducts = await productModel.countDocuments();
-      const pageSize = req.query.pageSize;
-      const pageTotals = Math.ceil(
-        (await productModel.find()).length / pageSize
-      );
+      const pageSize = 6;
+      const pageTotal =
+        Math.ceil(
+          (await productModel.find({ category: cateId })).length / pageSize
+        ) || 1;
+      const totalProducts = await (
+        await productModel.find({ category: cateId })
+      ).length;
+      let pageTotals;
+      console.log(totalProducts);
+      if (req.query.search != "") {
+        const feature = new APIfeatures(
+          productModel.find({ category: cateId }),
+          req.query
+        )
+          .sorting()
+          .searching()
+          .filtering();
 
-      const features = new APIfeatures(
-        productModel.find({ category: cateId })
-        ,
-        req.query
-      )
-        .pagination(pageSize)
-        .sorting()
-        .searching()
-        .filtering();
+        getAll = await feature.query;
+        pageTotals = Math.ceil(getAll.length / pageSize) || 1;
 
-      const getAllProducts = await features.query;
-      res.status(200).send({
-        message: "Get all product successfully",
-        data: getAllProducts,
-        totalProducts: totalProducts,
-        pageTotals: pageTotals,
-      });
+        const features = new APIfeatures(
+          productModel.find({ category: cateId }),
+          req.query
+        )
+          .pagination(pageSize)
+          .sorting()
+          .searching()
+          .filtering();
+
+        getAll = await features.query;
+        res.status(200).send({
+          message: "Get all products successfully",
+          data: getAll,
+          pageTotals: pageTotals,
+          totalProducts: totalProducts,
+        });
+      } else {
+        const features = new APIfeatures(
+          productModel.find({ category: cateId }),
+          req.query
+        )
+          .pagination(pageSize)
+          .sorting()
+          .searching()
+          .filtering();
+
+        getAll = await features.query;
+
+        res.status(200).send({
+          message: "Get all products successfully",
+          data: getAll,
+          pageTotals: pageTotal,
+          totalProducts: totalProducts,
+        });
+      }
     } catch (error) {
       httpError.serverError(res, error);
     }
@@ -86,7 +143,8 @@ const productController = {
     let id = req.params.id;
     let productDetails;
     try {
-      productDetails = await productModel.findById(id);
+      productDetails = await productModel
+        .findById(id)
       res
         .status(200)
         .send({ message: "Get details successfully", data: productDetails });
@@ -135,10 +193,16 @@ const productController = {
         newImg = product.productImg;
       }
       updateProduct.productImg = newImg;
+
+      const string = req.body.color;
+      const arr = string.split(",");
+      updateProduct.color = arr;
+
       const updatedProduct = await productModel.updateOne(
         { _id: id },
         { $set: updateProduct }
       );
+      res.status(200);
       console.log(updatedProduct);
     } catch (error) {
       if (product == null) {
@@ -178,5 +242,24 @@ const productController = {
     }
   },
 };
+
+const run = () => {
+  // const test = "test,test-ver1";
+  // console.log(test);
+  // console.log(typeof test);
+  // const arr = [];
+
+  // const x = test.split(",");
+  // console.log(x);
+
+  const arr = ["a", "b", "cd"];
+  const col = ["a", "c", "kl"];
+
+  var intersection = arr.filter(function (item) {
+    return !col.includes(item);
+  });
+  console.log(intersection);
+};
+run();
 
 module.exports = productController;

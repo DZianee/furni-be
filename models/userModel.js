@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema(
   {
     lastLogin: {
-      type: Date
+      type: Date,
     },
     avatar: {
       type: String,
@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
+      unique: true,
     },
     address: {
       street: {
@@ -46,7 +47,6 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Role_Model",
       required: [true, "Role is required"],
-      default: "Default user",
     },
     status: {
       type: String,
@@ -73,6 +73,5 @@ userSchema.index({
 });
 
 const User_Model = mongoose.model("User_Model", userSchema);
-
 
 module.exports = User_Model;

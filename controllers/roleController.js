@@ -1,21 +1,25 @@
 const roleModel = require("../models/roleModel");
 const httpError = require("../middleware/error");
 
-// const userModel = require("../models/userModel");
+const userModel = require("../models/userModel");
 
 const roleController = {
   addRole: async (req, res) => {
+    const newRole = new roleModel({
+      name: req.body.name,
+      status: req.body.status,
+    });
     try {
-      const newRole = new roleModel({
-        name: req.body.name,
-        status: req.body.status,
-      });
       const saveRole = await newRole.save();
       res
         .status(200)
         .send({ message: "create role successfully", data: saveRole });
     } catch (error) {
-      httpError.badRequest(res, error);
+      if (error.name == "ValidationError") {
+        httpError.badRequest(res, error);
+      } else {
+        httpError.serverError(res, error);
+      }
     }
   },
   getAllRoles: async (req, res) => {
@@ -28,11 +32,23 @@ const roleController = {
       httpError.serverError(res, error);
     }
   },
+  getAllStaffRoles: async (req, res) => {
+    let customerId = req.params.customerId;
+    console.log(customerId);
+    try {
+      const getAll = await roleModel.find({ _id: { $ne: customerId } });
+      res
+        .status(200)
+        .send({ message: "get all roles successfully", data: getAll });
+    } catch (error) {
+      httpError.serverError(res, error);
+    }
+  },
   getDetailsRole: async (req, res) => {
     let id = req.params.id;
     let role;
     try {
-      role = await roleModel.find({ _id: id });
+      role = await roleModel.findById(id);
       res
         .status(200)
         .send({ message: "get details role successfully", data: role });
@@ -68,21 +84,32 @@ const roleController = {
       }
     }
   },
+  checkUserInRole: async (req, res) => {
+    let id = req.params.id;
+    let user;
+    try {
+      user = await userModel.find({ role: id });
+      console.log(user);
+      console.log(typeof user);
+      if (user == "") {
+        res.status(202).send({ message: "Available to delete" });
+      } else {
+        res.status(200).send({
+          message: "This role is being used, you are not allowed to remove it.",
+          data: user,
+        });
+      }
+    } catch (err) {
+      httpError.serverError(res, error);
+    }
+  },
   deleteRole: async (req, res) => {
     let id = req.params.id;
     let role;
     try {
       role = await roleModel.find({ _id: id });
-      //   const user = userModel.find({ role: req.params.id });
-      //   if (user) {
-      //     res.status(400).send({
-      //       message: "This role is being used, you are not allowed to remove it.",
-      //     });
-      //   } else {
-      roleModel.deleteOne({ _id: id }, () => {
-        console.log("delete successfully");
-      });
-      //   }
+      const deleteRole = await roleModel.findOneAndDelete({ _id: id });
+      res.status(200).send({ data: deleteRole });
     } catch (error) {
       if (role == null) {
         httpError.notFound(res, error, "role");

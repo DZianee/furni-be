@@ -8,6 +8,10 @@ router.post("/newRole", auth, roleController.addRole);
 
 router.get("/", auth, roleController.getAllRoles);
 
+router.get("/staffRolesList/:customerId", auth, roleController.getAllStaffRoles);
+
+router.get("/checkRole/:id", auth, roleController.checkUserInRole);
+
 router.get("/roleDetails/:id", auth, roleController.getDetailsRole);
 
 router.put("/updateRole/:id", auth, roleController.updateRole);

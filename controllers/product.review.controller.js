@@ -12,6 +12,9 @@ const productReviewController = {
         comment: req.body.comment,
         user: req.body.user,
         rating: req.body.rating,
+        firstname: req.body.firstname,
+        lastname: req.body.lastname,
+        avatar: req.body.avatar,
       };
       product.review.push(reviewComment);
       product.countReviews = product.review.length;
@@ -29,13 +32,44 @@ const productReviewController = {
       }
     }
   },
+  detailsReview: async (req, res) => {
+    let id = req.params.id;
+    let reviewId = req.params.reviewId;
+    let product;
+    try {
+      product = await productModel.findById(id);
+      console.log(reviewId);
+      const review = await product.review.id(reviewId);
+      if (review == null) {
+        res.status(404).send({ message: "This review cannot be found" });
+      } else {
+        // const reviewComment = {
+        //   comment: req.body.comment,
+        //   user: req.body.user,
+        //   rating: req.body.rating,
+        // };
+        // review.set(reviewComment);
+        // const updateReview = await product.save();
+        res
+          .status(200)
+          .send({ message: "Get details review successfully", data: review });
+      }
+    } catch (error) {
+      if (product == null) {
+        httpErrors.notFound(res, error, "product");
+      } else {
+        httpErrors.serverError(res, error);
+      }
+    }
+  },
   updateReview: async (req, res) => {
     let id = req.params.id;
+    let reviewId = req.params.reviewId;
     let product;
     try {
       product = await productModel.findById(id);
 
-      const review = await product.review.id(req.query.reviewId);
+      const review = await product.review.id(reviewId);
       if (review == null) {
         res.status(404).send({ message: "This review cannot be found" });
       } else {
@@ -60,11 +94,12 @@ const productReviewController = {
   },
   deleteReview: async (req, res) => {
     let id = req.params.id;
+    let reviewId = req.params.reviewId;
     let product;
     try {
       product = await productModel.findById(id);
 
-      const review = await product.review.id(req.query.reviewId);
+      const review = await product.review.id(reviewId);
       if (review == null) {
         res.status(404).send({ message: "This review cannot be found" });
       } else {
@@ -86,7 +121,7 @@ const productReviewController = {
         httpErrors.notFound(res, error, "product");
       } else {
         httpErrors.serverError(res, error);
-        console.log(error)
+        console.log(error);
       }
     }
   },

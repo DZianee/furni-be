@@ -37,8 +37,10 @@ const categoryController = {
 
       res.status(200).send({
         message: "Get all categories successfully",
-        data: getAll,
-        total: total,
+        data: {
+          content: getAll,
+          total: total,
+        },
       });
     } catch (error) {
       httpError.serverError(res, error);
@@ -49,17 +51,15 @@ const categoryController = {
     try {
       getDetails = await categoryModel
         .findById(req.params.id)
-        .populate("productList", "name code type");
-      const total = await categoryModel.aggregate([
-        {
-          $project: { inStock: { $size: "$productList" } },
-        },
-      ]);
+        .populate("productList", "name code type price status productImg category");
+      const totalProduct = getDetails.productList.length;
 
       res.status(200).send({
         message: "Get details successfully",
-        data: getDetails,
-        total: total,
+        data: {
+          content: getDetails,
+          totalProduct: totalProduct,
+        },
       });
     } catch (error) {
       if (getDetails == null) {
@@ -93,27 +93,32 @@ const categoryController = {
       }
     }
   },
-  deleteCate: async (req, res) => {
-    let cate;
+  checkProduct: async (req, res) => {
+    let id = req.params.id;
+    let product;
     try {
-      cate = await categoryModel.find({ _id: req.params.id });
-
-      const product = await productModel.find({ category: req.params.id });
-      if (product === []) {
-        res.status(400).send({
+      product = await productModel.find({ category: id });
+      console.log(product);
+      if (product == "") {
+        res.status(202).send({ message: "Available to delete" });
+      } else {
+        res.status(200).send({
           message:
             "This category is being used, you are not allowed to remove it.",
+          data: product,
         });
-      } else {
-        categoryModel.deleteOne(
-          {
-            _id: req.params.id,
-          },
-          () => {
-            console.log("delete successfully");
-          }
-        );
       }
+    } catch (err) {
+      httpError.serverError(res, error);
+    }
+  },
+  deleteCate: async (req, res) => {
+    let cate;
+    let id = req.params.id;
+    try {
+      cate = await categoryModel.findById(id);
+      const deleteCate = await categoryModel.findOneAndDelete({ _id: id });
+      res.status(200).send({ data: deleteCate });
     } catch (error) {
       if (cate == null) {
         httpError.notFound(res, error, "category");
@@ -124,4 +129,25 @@ const categoryController = {
   },
 };
 
+const test = () => {
+  const arr = [
+    { name: "Test ver 1", type: "Chair" },
+    { name: "Test ver 2", type: "Armchair" },
+    { name: "Test ver 3", type: "Armchair" },
+  ];
+  const mapping = arr.map((item) => item.type);
+  console.log(mapping);
+  if (mapping.length > 1) {
+    var unique = [...new Set(mapping)];
+    console.log(unique);
+    
+    };
+  // const count = arr.filter((item) => item === type);
+  // console.log(count)
+  // const x1 = ["Chao", "Ne", "Chao"].toString();
+  // const x = "Chao";
+  // console.log(x1.length);
+  // const y = x1.
+};
+test();
 module.exports = categoryController;

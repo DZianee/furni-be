@@ -1,34 +1,37 @@
 const userModel = require("../models/userModel");
+const roleModel = require("../models/roleModel");
 const httpErrors = require("../middleware/error");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const APIfeatures = require("../lib/features");
+const { query } = require("express");
 
 const userController = {
   newUser: async (req, res) => {
-    const salt = await bcrypt.genSalt(10);
-    const hashed = await bcrypt.hash(req.body.password, salt);
-    const user = new userModel({
-      avatar: req.body.avatar,
-      firstname: req.body.firstname,
-      lastname: req.body.lastname,
-      email: req.body.email,
-      password: hashed,
-      phone: req.body.phone,
-      address: {
-        street: req.body.street,
-        ward: req.body.ward,
-        district: req.body.district,
-        city: req.body.city,
-      },
-      role: req.body.role,
-      status: req.body.status,
-      order: req.body.order,
-    });
     try {
-      const avatarName = req.file.filename;
-      user.avatar = avatarName;
+      const salt = await bcrypt.genSalt(10);
+      const hashed = await bcrypt.hash(req.body.password, salt);
+      const user = new userModel({
+        avatar: req.body.avatar,
+        firstname: req.body.firstname,
+        lastname: req.body.lastname,
+        email: req.body.email,
+        password: hashed,
+        phone: req.body.phone,
+        address: {
+          street: req.body.street,
+          ward: req.body.ward,
+          district: req.body.district,
+          city: req.body.city,
+        },
+        role: req.body.role,
+        status: req.body.status,
+        order: req.body.order,
+      });
+
+      console.log(user);
       const newUser = await user.save();
+      console.log(newUser.role);
       res.status(200).send({ message: "New user is created", data: newUser });
     } catch (error) {
       if (error.name == "ValidationError") {
@@ -40,9 +43,11 @@ const userController = {
   },
   userLogin: async (req, res) => {
     try {
-      const user = await userModel.findOne({ email: req.body.email });
+      const user = await userModel
+        .findOne({ email: req.body.email })
+        .populate("role", "name");
       if (!user) {
-        httpError.notFound(res, error, "user");
+        httpErrors.notFound(res, error, "user");
       }
       const validPassword = await bcrypt.compare(
         req.body.password,
@@ -67,10 +72,15 @@ const userController = {
         res.status(200).send({
           message: "Login verified",
           data: {
+            id: user._id,
             email: user.email,
             lastLogin: user.lastLogin,
             token: token,
             refreshToken: refreshToken,
+            avatar: user.avatar,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            role: user.role,
           },
         });
       }
@@ -87,23 +97,16 @@ const userController = {
         const salt = await bcrypt.genSalt(10);
         const hashed = await bcrypt.hash(req.body.password, salt);
         const user = new userModel({
-          avatar: req.body.avatar,
-          firstname: req.body.firstname,
-          lastname: req.body.lastname,
           email: req.body.email,
+          avatar: req.body.avatar,
           password: hashed,
-          phone: req.body.phone,
-          address: {
-            street: req.body.street,
-            ward: req.body.ward,
-            district: req.body.district,
-            city: req.body.city,
-          },
           role: req.body.role,
           status: req.body.status,
         });
-        const avatarName = req.file.filename;
-        user.avatar = avatarName;
+        const role = await roleModel.find({ name: "Default User" });
+        user.role = role[0]._id;
+        // const avatarName = req.file.filename;
+        // user.avatar = avatarName;
         const newUser = await user.save();
         res.status(200).send({ message: "New user created", data: newUser });
       }
@@ -133,6 +136,33 @@ const userController = {
       }
     );
   },
+  getAllUsers: async (req, res) => {
+    let roleId = req.params.customerId;
+    let getAll;
+    try {
+      const totalUsers = await userModel.countDocuments();
+
+      const pageSize = 6;
+      const pageTotals = Math.ceil((await userModel.find()).length / pageSize);
+
+      const features = new APIfeatures(userModel.find(), req.query)
+        .pagination(pageSize)
+        .sorting()
+        .searching()
+        .filtering();
+
+      getAll = await features.query.populate("role", "name");
+
+      res.status(200).send({
+        message: "Get all staffs successfully",
+        data: getAll,
+        totalUsers: totalUsers,
+        pageTotals: pageTotals,
+      });
+    } catch (error) {
+      httpErrors.serverError(res, error);
+    }
+  },
   getAllStaff: async (req, res) => {
     let roleId = req.params.customerId;
     let getAll;
@@ -150,7 +180,7 @@ const userController = {
         userModel.find({ role: { $ne: roleId } }),
         req.query
       )
-        .pagination(pageSize)
+        // .pagination(pageSize)
         .sorting()
         .searching()
         .filtering();
@@ -172,26 +202,56 @@ const userController = {
     let getAll;
     try {
       const pageSize = 6;
-      const pageTotals =
+      const pageTotal =
         Math.ceil((await userModel.find({ role: roleId })).length / pageSize) ||
         1;
 
-      const features = new APIfeatures(
-        userModel.find({ role: roleId }),
-        req.query
-      )
-        .pagination(pageSize)
-        .sorting()
-        .searching()
-        .filtering();
+      let pageTotals;
+      if (req.query.search != "") {
+        const feature = new APIfeatures(
+          userModel.find({ role: roleId }),
+          req.query
+        )
+          .sorting()
+          .searching()
+          .filtering();
 
-      getAll = await features.query.populate("role", "name");
+        getAll = await feature.query.populate("role", "name");
+        pageTotals = Math.ceil(getAll.length / pageSize) || 1;
 
-      res.status(200).send({
-        message: "Get all customers successfully",
-        data: getAll,
-        pageTotals: pageTotals,
-      });
+        const features = new APIfeatures(
+          userModel.find({ role: roleId }),
+          req.query
+        )
+          .pagination(pageSize)
+          .sorting()
+          .searching()
+          .filtering();
+
+        getAll = await features.query.populate("role", "name");
+        res.status(200).send({
+          message: "Get all customers successfully",
+          data: getAll,
+          pageTotals: pageTotals,
+        });
+      } else {
+        const features = new APIfeatures(
+          userModel.find({ role: roleId }),
+          req.query
+        )
+          .pagination(pageSize)
+          .sorting()
+          .searching()
+          .filtering();
+
+        getAll = await features.query.populate("role", "name");
+
+        res.status(200).send({
+          message: "Get all customers successfully",
+          data: getAll,
+          pageTotals: pageTotal,
+        });
+      }
     } catch (error) {
       httpErrors.serverError(res, error);
     }
@@ -201,14 +261,20 @@ const userController = {
     let id = req.params.id;
     let getDetails;
     try {
-      getDetails = await userModel.findById(id).populate("order");
+      getDetails = await userModel
+        .findById(id)
+        .populate("order")
+        .populate("role");
       res.status(200).send({
         message: "Get user details successfully",
         data: {
+          id: getDetails._id,
           firstname: getDetails.firstname,
           lastname: getDetails.lastname,
           email: getDetails.email,
           phone: getDetails.phone,
+          status: getDetails.status,
+          role: getDetails.role,
           address: {
             street: getDetails.address.street,
             ward: getDetails.address.ward,
@@ -218,6 +284,29 @@ const userController = {
           order: getDetails.order,
         },
       });
+    } catch (error) {
+      if (getDetails == null) {
+        httpErrors.notFound(res, error, "user");
+      } else {
+        httpErrors.serverError(res, error);
+      }
+    }
+  },
+  getDetailsUserComment: async (req, res) => {
+    let id = req.params.id;
+    let getDetails;
+    try {
+      getDetails = await userModel.findById(id);
+      res.status(200).send({
+        message: "Get user details successfully",
+        data: {
+          id: getDetails._id,
+          firstname: getDetails.firstname,
+          lastname: getDetails.lastname,
+          avatar: getDetails.avatar,
+        },
+      });
+      console.log(getDetails);
     } catch (error) {
       if (getDetails == null) {
         httpErrors.notFound(res, error, "user");
@@ -284,7 +373,23 @@ const userController = {
       }
     }
   },
-  deleteUser: async (req, res) => {},
+  deleteStaff: async (req, res) => {
+    let id = req.params.id;
+    let getUser;
+    try {
+      getUser = await userModel.findById(id);
+      console.log(getUser);
+
+      const deleteUser = await userModel.findOneAndDelete({ _id: id });
+      res.status(200).send({ data: deleteUser });
+    } catch (error) {
+      if (getUser == null) {
+        httpErrors.notFound(res, error, "staff");
+      } else {
+        httpErrors.serverError(res, error);
+      }
+    }
+  },
 };
 
 module.exports = userController;

@@ -13,6 +13,9 @@ const categorySchema = new mongoose.Schema({
     required: [true, "Category name is required to have"],
     minlength: [5, "It must be at least 5 characters"],
   },
+  totalProduct: {
+    type: Number,
+  },
   productList: [
     {
       type: mongoose.Schema.Types.ObjectId,

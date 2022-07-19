@@ -25,10 +25,12 @@ const productSchema = new mongoose.Schema(
       min: [1, "Min quantity must be at least 1"],
       required: [true, "Product import quantity is required"],
     },
-    color: {
-      type: [String],
-      required: [true, "Product color is required"],
-    },
+    color: [
+      {
+        type: String,
+        required: [true, "Product color is required"],
+      },
+    ],
     status: {
       type: String,
       default: "IN STOCK",

@@ -8,6 +8,8 @@ router.post("/newCate", auth, categoryController.newCate);
 
 router.get("/", auth, categoryController.getAll);
 
+router.get("/checkProduct/:id", auth, categoryController.checkProduct);
+
 router.get("/cateDetails/:id", auth, categoryController.getDetails);
 
 router.put("/updateCate/:id", auth, categoryController.updateCate);

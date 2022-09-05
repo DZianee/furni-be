@@ -56,27 +56,55 @@ const productController = {
     }
   },
   getAll: async (req, res) => {
+    let product;
     try {
       const pageSize = 6;
-      const pageTotals =
+      const pageTotal =
         Math.ceil((await productModel.find()).length / pageSize) || 1;
-      const feature = new APIfeatures(productModel.find(), req.query)
-        .sorting()
-        .searching()
-        .filtering()
-        .pagination(pageSize);
-      const product = await feature.query;
-      res.status(200).send({
-        message: "get all products in furni successfully",
-        data: product,
-        pageTotals: pageTotals,
-      });
+      let pageTotals;
+      if (req.query.search != "") {
+        const feature = new APIfeatures(productModel.find(), req.query)
+          .sorting()
+          .searching()
+          .filtering();
+
+        product = await feature.query;
+        pageTotals = Math.ceil(product.length / pageSize) || 1;
+
+        const features = new APIfeatures(productModel.find(), req.query)
+          .pagination(pageSize)
+          .sorting()
+          .searching()
+          .filtering();
+
+        product = await features.query;
+        res.status(200).send({
+          message: "Get all products successfully",
+          data: product,
+          pageTotals: pageTotals,
+        });
+      } else {
+        const features = new APIfeatures(productModel.find(), req.query)
+          .pagination(pageSize)
+          .sorting()
+          .searching()
+          .filtering();
+
+        product = await features.query;
+
+        res.status(200).send({
+          message: "Get all products successfully",
+          data: product,
+          pageTotals: pageTotal,
+        });
+      }
     } catch (error) {
       httpError.serverError(res, error);
     }
   },
   getAllProducts: async (req, res) => {
     let cateId = req.params.categoryId;
+    let getAll;
     try {
       const pageSize = 6;
       const pageTotal =
@@ -87,7 +115,6 @@ const productController = {
         await productModel.find({ category: cateId })
       ).length;
       let pageTotals;
-      console.log(totalProducts);
       if (req.query.search != "") {
         const feature = new APIfeatures(
           productModel.find({ category: cateId }),
@@ -143,11 +170,36 @@ const productController = {
     let id = req.params.id;
     let productDetails;
     try {
-      productDetails = await productModel
-        .findById(id)
+      productDetails = await productModel.findById(id);
+
       res
         .status(200)
         .send({ message: "Get details successfully", data: productDetails });
+    } catch (error) {
+      if (productDetails == null) {
+        httpError.notFound(res, error, "product");
+      } else {
+        httpError.serverError(res, error);
+      }
+    }
+  },
+  getReviewsPerUser: async (req, res) => {
+    let user = req.params.userId;
+    let productDetails;
+    try {
+      console.log(user);
+      productDetails = await productModel.find();
+
+      const arr = productDetails.filter((item) => item.review != "");
+      const subject = arr[0].review;
+      const review = await subject.filter((item) => item.user == user);
+      console.log(review);
+
+      res.status(200).send({
+        message: "Get details successfully",
+        data: review,
+        arrProduct: arr,
+      });
     } catch (error) {
       if (productDetails == null) {
         httpError.notFound(res, error, "product");
@@ -198,12 +250,78 @@ const productController = {
       const arr = string.split(",");
       updateProduct.color = arr;
 
+      if (product.status == "OUT OF STOCK") {
+        if (updateProduct.importQuantity > product.importQuantity) {
+          updateProduct.status = "IN STOCK";
+        } else {
+          updateProduct.status = "IN STOCK";
+        }
+      }
+
       const updatedProduct = await productModel.updateOne(
         { _id: id },
         { $set: updateProduct }
       );
+
       res.status(200);
       console.log(updatedProduct);
+    } catch (error) {
+      if (product == null) {
+        httpError.notFound(res, error, "product");
+      } else {
+        httpError.serverError(res, error);
+      }
+    }
+  },
+  updateExportQuantity: async (req, res) => {
+    let product;
+    let id = req.params.id;
+    let exportQuantity = req.body.exportQuantity;
+    let typeAction = req.body.type;
+    let result;
+    console.log(id);
+    try {
+      product = await productModel.findById(id);
+      if (typeAction == "increase") {
+        product.exportQuantity = product.exportQuantity + exportQuantity;
+      } else {
+        product.exportQuantity = product.exportQuantity - exportQuantity;
+      }
+      await product.save();
+
+      product = await productModel.findById(id);
+      if (product.importQuantity > product.exportQuantity) {
+        product.status = "IN STOCK";
+        result = await product.save();
+      } else if (product.importQuantity == product.exportQuantity) {
+        product.status = "OUT OF STOCK";
+        result = await product.save();
+      }
+
+      res.status(200).send({ message: "check in stock already", data: result });
+    } catch (error) {
+      if (product == null) {
+        httpError.notFound(res, error, "product");
+      } else {
+        httpError.serverError(res, error);
+      }
+    }
+  },
+  updateProductInStock: async (req, res) => {
+    let result;
+    let id = req.params.id;
+    try {
+      const product = await productModel.findById(id);
+      if (product.importQuantity > product.exportQuantity) {
+        product.status = "IN STOCK";
+        result = await product.save();
+      } else if (product.importQuantity == product.exportQuantity) {
+        product.status = "OUT OF STOCK";
+        result = await product.save();
+      }
+      console.log(result);
+
+      res.status(200).send({ message: "check in stock already", data: result });
     } catch (error) {
       if (product == null) {
         httpError.notFound(res, error, "product");
@@ -241,6 +359,44 @@ const productController = {
       }
     }
   },
+  getProductByCateName: async (req, res) => {
+    let id = req.params.cateId;
+    let productDetails;
+    let productList;
+    try {
+      productDetails = await productModel.find({ category: id });
+      console.log(productDetails);
+      if (req.query.search != "") {
+        const feature = new APIfeatures(
+          productModel.find({ category: id }),
+          req.query
+        )
+          .sorting()
+          .searching()
+          .filtering();
+
+        productList = await feature.query;
+      } else {
+        const features = new APIfeatures(
+          productModel.find({ category: id }),
+          req.query
+        )
+          .sorting()
+          .filtering();
+
+        productList = await features.query;
+      }
+      res
+        .status(200)
+        .send({ message: "Get details successfully", data: productList });
+    } catch (error) {
+      if (productDetails == null) {
+        httpError.notFound(res, error, "product");
+      } else {
+        httpError.serverError(res, error);
+      }
+    }
+  },
 };
 
 const run = () => {
@@ -259,7 +415,9 @@ const run = () => {
     return !col.includes(item);
   });
   console.log(intersection);
+  const date = new Date(Date.now());
+  console.log(date.getUTCFullYear());
 };
-run();
+// run();
 
 module.exports = productController;

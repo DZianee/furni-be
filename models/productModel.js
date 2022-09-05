@@ -5,6 +5,7 @@ const productSchema = new mongoose.Schema(
   {
     name: {
       type: String,
+      uppercase: true,
       required: [true, "Product name is required"],
       minlength: [10, "Product name length must be at least 10 characters"],
     },
@@ -24,6 +25,10 @@ const productSchema = new mongoose.Schema(
       type: Number,
       min: [1, "Min quantity must be at least 1"],
       required: [true, "Product import quantity is required"],
+    },
+    exportQuantity: {
+      type: Number,
+      default: 0,
     },
     color: [
       {

@@ -29,8 +29,9 @@ const reviewSchema = new mongoose.Schema({
     default: "EXCELLENT",
   },
   like: [reactSchema],
-  countReact: {
+  countReacts: {
     type: Number,
+    default: 0,
   },
 });
 

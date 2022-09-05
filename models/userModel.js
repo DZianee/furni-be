@@ -72,6 +72,5 @@ userSchema.index({
   status: "text",
 });
 
-const User_Model = mongoose.model("User_Model", userSchema);
 
-module.exports = User_Model;
+module.exports =  mongoose.model("User_Model", userSchema);

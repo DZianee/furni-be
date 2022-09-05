@@ -4,9 +4,9 @@ const httpErrors = require("../middleware/error");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const APIfeatures = require("../lib/features");
-const { query } = require("express");
 
 const userController = {
+  refreshCode: "",
   newUser: async (req, res) => {
     try {
       const salt = await bcrypt.genSalt(10);
@@ -60,15 +60,16 @@ const userController = {
         user.lastLogin = Date.now();
         await user.save();
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET_CODE, {
-          expiresIn: "2h",
+          expiresIn: "1d",
         });
         const refreshToken = jwt.sign(
           { id: user.id },
           process.env.JWT_SECRET_REFRESHCODE,
           {
-            expiresIn: "1d",
+            expiresIn: "7d",
           }
         );
+        this.refreshCode = refreshToken;
         res.status(200).send({
           message: "Login verified",
           data: {
@@ -76,7 +77,7 @@ const userController = {
             email: user.email,
             lastLogin: user.lastLogin,
             token: token,
-            refreshToken: refreshToken,
+            // refreshToken: refreshToken,
             avatar: user.avatar,
             firstname: user.firstname,
             lastname: user.lastname,
@@ -115,22 +116,20 @@ const userController = {
     }
   },
   refreshToken: (req, res) => {
-    let refreshToken = req.body.refreshToken;
+    let refreshToken = this.refreshCode;
     jwt.verify(
       refreshToken,
       process.env.JWT_SECRET_REFRESHCODE,
       (err, user) => {
         if (err) {
-          httpErrors.badRequest(res, error);
+          httpErrors.badRequest(res, err);
         } else {
           const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET_CODE, {
-            expiresIn: "2h",
+            expiresIn: "1d",
           });
-          let refreshToken = req.body.refreshToken;
           res.status(200).send({
             message: "Refresh token successfully",
             token: token,
-            refreshToken: refreshToken,
           });
         }
       }
@@ -154,7 +153,7 @@ const userController = {
       getAll = await features.query.populate("role", "name");
 
       res.status(200).send({
-        message: "Get all staffs successfully",
+        message: "Get all users successfully",
         data: getAll,
         totalUsers: totalUsers,
         pageTotals: pageTotals,
@@ -202,6 +201,7 @@ const userController = {
     let getAll;
     try {
       const pageSize = 6;
+      const totalCus = await userModel.find({ role: roleId }).countDocuments();
       const pageTotal =
         Math.ceil((await userModel.find({ role: roleId })).length / pageSize) ||
         1;
@@ -233,6 +233,7 @@ const userController = {
           message: "Get all customers successfully",
           data: getAll,
           pageTotals: pageTotals,
+          totalCustomers: totalCus,
         });
       } else {
         const features = new APIfeatures(
@@ -250,6 +251,7 @@ const userController = {
           message: "Get all customers successfully",
           data: getAll,
           pageTotals: pageTotal,
+          totalCustomers: totalCus,
         });
       }
     } catch (error) {
@@ -261,14 +263,13 @@ const userController = {
     let id = req.params.id;
     let getDetails;
     try {
-      getDetails = await userModel
-        .findById(id)
-        .populate("order")
-        .populate("role");
+      getDetails = await userModel.findById(id);
       res.status(200).send({
         message: "Get user details successfully",
         data: {
           id: getDetails._id,
+          lastLogin: getDetails.lastLogin,
+          avatar: getDetails.avatar,
           firstname: getDetails.firstname,
           lastname: getDetails.lastname,
           email: getDetails.email,
@@ -318,29 +319,36 @@ const userController = {
   updateUser: async (req, res) => {
     let id = req.params.id;
     let getUser;
-    let user;
+    let user = null;
     try {
-      getUser = await userModel.find({ _id: id });
-      console.log(getUser);
+      getUser = await userModel.findById(id);
 
       if (req.body.password) {
-        const salt = await bcrypt.genSalt(10);
-        const hashed = await bcrypt.hash(req.body.password, salt);
-        user = {
-          firstname: req.body.firstname,
-          lastname: req.body.lastname,
-          email: req.body.email,
-          password: hashed,
-          phone: req.body.phone,
-          address: {
-            street: req.body.street,
-            ward: req.body.ward,
-            district: req.body.district,
-            city: req.body.city,
-          },
-          role: req.body.role,
-          status: req.body.status,
-        };
+        const validPassword = await bcrypt.compare(
+          req.body.oldPassword,
+          getUser.password
+        );
+        if (validPassword) {
+          const salt = await bcrypt.genSalt(10);
+          const hashed = await bcrypt.hash(req.body.password, salt);
+          user = {
+            firstname: req.body.firstname,
+            lastname: req.body.lastname,
+            email: req.body.email,
+            password: hashed,
+            phone: req.body.phone,
+            address: {
+              street: req.body.street,
+              ward: req.body.ward,
+              district: req.body.district,
+              city: req.body.city,
+            },
+            role: req.body.role,
+            status: req.body.status,
+          };
+        } else {
+          res.status(404).send({ message: "Password is wrong" });
+        }
       } else {
         user = {
           firstname: req.body.firstname,
@@ -357,14 +365,15 @@ const userController = {
           status: req.body.status,
         };
       }
-      console.log(user);
-      const updatedUser = await userModel.updateOne(
-        { _id: id },
-        { $set: user }
-      );
-      res
-        .status(200)
-        .send({ message: "Update user successfully", data: updatedUser });
+      if (user != null) {
+        const updatedUser = await userModel.updateOne(
+          { _id: id },
+          { $set: user }
+        );
+        res
+          .status(200)
+          .send({ message: "Update user successfully", data: updatedUser });
+      }
     } catch (error) {
       if (getUser == null) {
         httpErrors.notFound(res, error, "user");

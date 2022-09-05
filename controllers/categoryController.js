@@ -1,6 +1,7 @@
 const categoryModel = require("../models/categoryModel");
 const productModel = require("../models/productModel");
 const httpError = require("../middleware/error");
+const APIfeatures = require("../lib/features");
 
 const categoryController = {
   newCate: async (req, res) => {
@@ -51,7 +52,10 @@ const categoryController = {
     try {
       getDetails = await categoryModel
         .findById(req.params.id)
-        .populate("productList", "name code type price status productImg category");
+        .populate(
+          "productList",
+          "name code type price status productImg category"
+        );
       const totalProduct = getDetails.productList.length;
 
       res.status(200).send({
@@ -69,6 +73,54 @@ const categoryController = {
       }
     }
   },
+  // getProductsByCateName: async (req, res) => {
+  //   let getDetails;
+  //   let getAll;
+  //   try {
+  //     getDetails = await categoryModel
+  //       .findById(req.params.id)
+  //       .populate(
+  //         "productList",
+  //         "name code type price status productImg category"
+  //       );
+  //     let product = getDetails.productList;
+      
+  //     console.log(product)
+  //     if (req.query.search != "") {
+  //       const feature = new APIfeatures(product, req.query)
+  //         .sorting()
+  //         .searching()
+  //         .filtering();
+
+  //       getAll = await feature.query;
+  //       res.status(200).send({
+  //         message: "Get details successfully",
+  //         content: getAll,
+  //       });
+  //     } else {
+  //       console.log(product)
+  //       const features = new APIfeatures(product, req.query)
+  //         .sorting()
+  //         .searching()
+  //         .filtering();
+
+  //       getAll = await features.query;
+  //       console.log(getAll);
+  //       res.status(200).send({
+  //         message: "Get details successfully",
+  //         content: getAll,
+  //       });
+  //     }
+  //     console.log(getAll);
+  //   } catch (error) {
+  //     if (getDetails == null) {
+  //       httpError.notFound(res, error, "category");
+  //     } else {
+  //       httpError.serverError(res, error);
+  //       console.log(error.message)
+  //     }
+  //   }
+  // },
   updateCate: async (req, res) => {
     let getDetails;
     try {
@@ -140,8 +192,7 @@ const test = () => {
   if (mapping.length > 1) {
     var unique = [...new Set(mapping)];
     console.log(unique);
-    
-    };
+  }
   // const count = arr.filter((item) => item === type);
   // console.log(count)
   // const x1 = ["Chao", "Ne", "Chao"].toString();

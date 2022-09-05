@@ -10,9 +10,13 @@ const auth = authMiddlewareController.verifyToken;
 //product
 router.get("/:categoryId", auth, productController.getAllProducts);
 
-router.get("/", auth, productController.getAll);
+router.get("/", productController.getAll);
 
-router.get("/productDetails/:id", auth, productController.getProductDetails);
+router.get("/productDetails/:id", productController.getProductDetails);
+
+router.get("/reviewPerUser/:userId", productController.getReviewsPerUser);
+
+router.get("/getProductCate/:cateId", productController.getProductByCateName);
 
 router.post("/newProduct", auth, uploadImg, productController.newProduct);
 
@@ -21,6 +25,12 @@ router.put(
   auth,
   uploadImg,
   productController.updateProduct
+);
+
+router.put(
+  "/updateProductPrice/:id",
+  auth,
+  productController.updateExportQuantity
 );
 
 router.delete("/:id", auth, uploadImg, productController.deleteProduct);
@@ -52,10 +62,20 @@ router.delete(
 
 //React
 
-router.post("/productDetails/:id/React", auth, reviewReactController.addReact);
+router.post(
+  "/productDetails/:id/Review/:reviewId/React",
+  auth,
+  reviewReactController.addReact
+);
+
+router.get(
+  "/productDetails/:id/Review/:reviewId/React",
+  auth,
+  reviewReactController.addReact
+);
 
 router.delete(
-  "/productDetails/:id/React",
+  "/productDetails/:id/Review/:reviewId/React/:userId",
   auth,
   reviewReactController.deleteReact
 );

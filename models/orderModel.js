@@ -1,9 +1,16 @@
 const mongoose = require("mongoose");
+const cartSchema = require("./cartSchema");
 
 const orderSchema = new mongoose.Schema({
+  orderId: {
+    type: String,
+    required: true,
+  },
   dateCreate: {
     type: Date,
-    default: Date.now(),
+  },
+  dateClose: {
+    type: Date,
   },
   totalBill: {
     type: Number,
@@ -20,7 +27,7 @@ const orderSchema = new mongoose.Schema({
     payStatus: {
       type: String,
       default: "Unpaid",
-    }
+    },
   },
   status: {
     type: String,
@@ -34,43 +41,18 @@ const orderSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User_Model",
   },
-  cart: [
-    {
-      product: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product_Model",
-        required: true,
-      },
-      quantity: {
-        type: Number,
-        required: true,
-      },
-      amount: {
-        type: Number,
-        required: true,
-      },
-      color: {
-        type: [String],
-        required: true,
-      },
-      productImg: {
-        type: String,
-        required: true,
-      },
-      name: {
-        type: String,
-        required: true,
-      },
-    },
-  ],
+  cart: {
+    type: [Object],
+  },
 });
 
 orderSchema.index({
+  orderId: "text",
+  transactionID: "text",
   user: "text",
   process: "text",
   status: "text",
   dateCreate: "text",
 });
-
 
 module.exports = mongoose.model("Order_Model", orderSchema);

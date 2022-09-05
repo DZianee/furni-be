@@ -34,7 +34,6 @@ const roleController = {
   },
   getAllStaffRoles: async (req, res) => {
     let customerId = req.params.customerId;
-    console.log(customerId);
     try {
       const getAll = await roleModel.find({ _id: { $ne: customerId } });
       res

@@ -104,7 +104,7 @@ const productReviewController = {
         res.status(404).send({ message: "This review cannot be found" });
       } else {
         const removeReview = await review.remove(
-          { _id: req.query.reviewId },
+          { _id: reviewId},
           () => {
             console.log("delete successfully");
           }
@@ -125,6 +125,13 @@ const productReviewController = {
       }
     }
   },
+  // getReviewsPerUser: async (req, res) => {
+  //   try {
+      
+  //   } catch (error) {
+  //     console.log(error)
+  //   }
+  // },
 };
 
 module.exports = productReviewController;

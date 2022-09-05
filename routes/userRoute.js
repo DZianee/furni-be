@@ -19,11 +19,11 @@ router.get("/Staff/:customerId", auth, userController.getAllStaff);
 
 router.get("/", auth, userController.getAllUsers);
 
-router.get("/userDetails/Staff/:id", auth, userController.getDetailsUser);
+router.get("/userDetails/All/:id", auth, userController.getDetailsUser);
 
 router.get("/userDetails/:id", auth, userController.getDetailsUserComment);
 
-router.put("/updateUser/:id", auth, userController.updateUser);
+router.put("/updateUser/:id", userController.updateUser);
 
 router.delete("/removeStaff/:id", auth, userController.deleteStaff);
 

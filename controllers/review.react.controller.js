@@ -4,7 +4,7 @@ const httpErrors = require("../middleware/error");
 const productReviewController = {
   addReact: async (req, res) => {
     let id = req.params.id;
-    let reviewId = req.query.reviewId;
+    let reviewId = req.params.reviewId;
     let product;
     let review;
     try {
@@ -16,8 +16,9 @@ const productReviewController = {
         user: req.body.user,
       };
       review.like.push(reviewReact);
-      review.countReact = review.like.length;
+      review.countReacts = review.like.length;
 
+      console.log(review.countReact);
       await product.save();
       res.status(200).send({
         message: "Add new react successfully",
@@ -33,23 +34,49 @@ const productReviewController = {
       }
     }
   },
+  detailsReact: async (req, res) => {
+    let id = req.params.id;
+    let reviewId = req.params.reviewId;
+    let product;
+    try {
+      product = await productModel.findById(id);
+      console.log(reviewId);
+      const review = await product.review.id(reviewId);
+      const reactList = review.like;
+      console.log(reactList);
+      if (review == null) {
+        res.status(404).send({ message: "This review cannot be found" });
+      } else {
+        res
+          .status(200)
+          .send({ message: "Get details react successfully", data: reactList });
+      }
+    } catch (error) {
+      if (product == null) {
+        httpErrors.notFound(res, error, "product");
+      } else {
+        httpErrors.serverError(res, error);
+      }
+    }
+  },
   deleteReact: async (req, res) => {
     let id = req.params.id;
-    let reviewId = req.query.reviewId;
-    let reactId = req.query.reactId;
+    let reviewId = req.params.reviewId;
+    let userId = req.params.userId;
     let product;
     let review;
-    let react;
     try {
       product = await productModel.findById(id);
       review = product.review.id(reviewId);
-      react = review.like.id(reactId);
+      react = review.like.find((item) => item.user == userId);
 
-      await react.remove({ _id: reactId }, () => {
+      console.log(react);
+      console.log(review);
+
+      await react.remove({ _id: react._id }, () => {
         console.log("remove successfully");
       });
-      review.countReact = review.like.length;
-
+      review.countReacts = review.like.length;
       await product.save();
       res.status(200).send({
         message: "Remove item successfully",
@@ -60,8 +87,6 @@ const productReviewController = {
         httpErrors.notFound(res, error, "product");
       } else if (review == null) {
         httpErrors.notFound(res, error, "review");
-      } else if (react == null) {
-        httpErrors.notFound(res, error, "react");
       } else {
         httpErrors.serverError(res, error);
       }

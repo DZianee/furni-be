@@ -6,11 +6,13 @@ const auth = authMiddlewareController.verifyToken;
 
 router.post("/newCate", auth, categoryController.newCate);
 
-router.get("/", auth, categoryController.getAll);
+router.get("/", categoryController.getAll);
 
 router.get("/checkProduct/:id", auth, categoryController.checkProduct);
 
-router.get("/cateDetails/:id", auth, categoryController.getDetails);
+router.get("/cateDetails/:id", categoryController.getDetails);
+
+// router.get("/getProductsCate/:id", categoryController.getProductsByCateName);
 
 router.put("/updateCate/:id", auth, categoryController.updateCate);
 

@@ -10,7 +10,7 @@ const authMiddlewareController = {
       const accessToken = token.split(" ")[1];
       jwt.verify(accessToken, process.env.JWT_SECRET_CODE, (err, user) => {
         if (err) {
-          httpErrors.forbidden(res, error);
+          httpErrors.forbidden(res, err);
         } else {
           req.user = user;
           next();

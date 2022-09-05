@@ -8,7 +8,7 @@ const reactSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User_Model",
-    required: true
+    required: true,
   },
 });
 

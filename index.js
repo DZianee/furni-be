@@ -17,6 +17,7 @@ const roleRoute = require("./routes/roleRoute");
 const productRoute = require("./routes/productRoute");
 const userRoute = require("./routes/userRoute");
 const orderRoute = require("./routes/orderRoute");
+const financeRoute = require("./routes/financeRoute");
 
 // usage
 app.use(cors());
@@ -42,14 +43,13 @@ db.on("open", () => {
 
 //router link
 app.use("/api/Category", categoryRoute);
+app.use("/api/Fin", financeRoute);
 app.use("/api/Role", roleRoute);
 app.use("/api/Product", productRoute);
 app.use("/api/User", userRoute);
 app.use("/api/Order", orderRoute);
 app.use(express.static(__dirname + "/resource/img/uploads"));
 // app.get("/",)
-
-console.log(__dirname);
 
 // active
 app.listen(port, () => {

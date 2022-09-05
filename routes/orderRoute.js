@@ -12,7 +12,7 @@ router.get("/newOrders", auth, orderController.getNewOrders);
 
 router.get("/deliveryOrders", auth, orderController.getDeliveryOrders);
 
-router.get("/completedOrders", auth, orderController.getCompletedOrders);
+router.get("/checkedOrders", auth, orderController.getCheckedOrders);
 
 router.get("/cancelledOrders", auth, orderController.getCancelledOrders);
 
@@ -21,5 +21,10 @@ router.delete("/:id", auth, orderController.deleteOrder);
 router.get("/orderDetails/:id", auth, orderController.getDetails);
 
 router.put("/updateOrder/:id", auth, orderController.updateOrder);
+
+/* orders per user */
+router.get("/allOrderPerUser/:userId", auth, orderController.getAllUserOrders);
+
+router.get("/perOrderPerUser/:userId", auth, orderController.getUserOrdersPerStatus);
 
 module.exports = router;

@@ -20,6 +20,16 @@ router.get("/getProductCate/:cateId", productController.getProductByCateName);
 
 router.post("/newProduct", auth, uploadImg, productController.newProduct);
 
+router.get(
+  "/:productId/Review/sortComment",
+  productController.getSortCommentInReview
+);
+
+router.get(
+  "/:productId/Review/topLike",
+  productController.getTopHighestReactInReview
+);
+
 router.put(
   "/updateProduct/:id",
   auth,
@@ -48,6 +58,7 @@ router.get(
   auth,
   productReviewController.detailsReview
 );
+
 
 router.put(
   "/productDetails/:id/Review/:reviewId",

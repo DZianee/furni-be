@@ -397,6 +397,64 @@ const productController = {
       }
     }
   },
+  getTopHighestReactInReview: async (req, res) => {
+    let productId = req.params.productId;
+    let product;
+    let result = [];
+    try {
+      product = await productModel.findById(productId);
+
+      result = product.review.sort((a, b) => {
+        if (a.like.length > b.like.length) {
+          return -1;
+        } else if (a.like.length < b.like.length) {
+          return 1;
+        } else {
+          return 0;
+        }
+      });
+      res.status(200).send({ message: "top like is done", data: result });
+    } catch (error) {
+      if (product == null) {
+        httpError.notFound(res, error, "product");
+      } else {
+        httpError.serverError(res, error);
+      }
+    }
+  },
+  getSortCommentInReview: async (req, res) => {
+    let productId = req.params.productId;
+    let sortName = req.query.sortName;
+    let product;
+    let result;
+    try {
+      product = await productModel.findById(productId);
+      if (sortName == "dateCreated") {
+        result = product.review.sort((a, b) =>
+          a.dateCreated > b.dateCreated
+            ? 1
+            : b.dateCreated > a.dateCreated
+            ? -1
+            : 0
+        );
+      } else {
+        result = product.review.sort((a, b) =>
+          a.dateCreated > b.dateCreated
+            ? -1
+            : b.dateCreated > a.dateCreated
+            ? 1
+            : 0
+        );
+      }
+      res.status(200).send({ message: "sort is done", data: result });
+    } catch (error) {
+      if (product == null) {
+        httpError.notFound(res, error, "product");
+      } else {
+        httpError.serverError(res, error);
+      }
+    }
+  },
 };
 
 const run = () => {

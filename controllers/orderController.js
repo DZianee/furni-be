@@ -47,6 +47,17 @@ const orderController = {
       }
     }
   },
+  getAll: async (req, res) => {
+    let getAll;
+    try {
+      getAll = await orderModel.find();
+      res
+        .status(200)
+        .send({ message: "Get all orders without features", data: getAll });
+    } catch (error) {
+      httpErrors.serverError(res, error);
+    }
+  },
   getAllOrders: async (req, res) => {
     let getAllOrders;
 

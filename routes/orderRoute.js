@@ -8,6 +8,8 @@ router.post("/newOrder", auth, orderController.newOrder);
 
 router.get("/", auth, orderController.getAllOrders);
 
+router.get("/getAll", auth, orderController.getAll);
+
 router.get("/newOrders", auth, orderController.getNewOrders);
 
 router.get("/deliveryOrders", auth, orderController.getDeliveryOrders);
@@ -25,6 +27,10 @@ router.put("/updateOrder/:id", auth, orderController.updateOrder);
 /* orders per user */
 router.get("/allOrderPerUser/:userId", auth, orderController.getAllUserOrders);
 
-router.get("/perOrderPerUser/:userId", auth, orderController.getUserOrdersPerStatus);
+router.get(
+  "/perOrderPerUser/:userId",
+  auth,
+  orderController.getUserOrdersPerStatus
+);
 
 module.exports = router;

@@ -1,6 +1,7 @@
 const financeModel = require("../models/financeModel");
 const httpError = require("../middleware/error");
 const APIfeatures = require("../lib/features");
+const { all } = require("../routes/financeRoute");
 
 const financeController = {
   newRowLine: async (req, res) => {
@@ -15,7 +16,7 @@ const financeController = {
         data: newRowLine,
       });
     } catch (error) {
-      console.log(error);
+      httpError.serverError(res, error);
     }
   },
   getAll: async (req, res) => {
@@ -27,7 +28,7 @@ const financeController = {
         data: allRows,
       });
     } catch (error) {
-      console.log(error);
+      httpError.serverError(res, error);
     }
   },
   getDetails: async (req, res) => {
@@ -63,7 +64,7 @@ const financeController = {
         });
       }
     } catch (error) {
-      console.log(error);
+      httpError.serverError(res, error);
     }
   },
   revenueEachMonthLineChart: async (req, res) => {
@@ -100,11 +101,12 @@ const financeController = {
         revenues: sumArr,
       });
     } catch (error) {
-      console.log(error);
+      httpError.serverError(res, error);
     }
   },
   paymentMethodSummarizeChart: async (req, res) => {
     let id = req.params.id;
+    console.log(id);
     let allRowOrders;
     try {
       allRowOrders = (await financeModel.findById(id)).order;
@@ -121,7 +123,50 @@ const financeController = {
         data: result,
       });
     } catch (error) {
-      console.log(error);
+      httpError.serverError(res, error);
+    }
+  },
+  orderRevenueEachMonth: async (req, res) => {
+    let year = req.params.id;
+    let allDataInYear;
+    let monthArr = [];
+    let arr = [];
+    let sumArr = [];
+    try {
+      allDataInYear = await financeModel.find({ year: year });
+      const orderList = allDataInYear[0].order;
+      const ordersInYear = orderList.reduce((copyArr, currValue) => {
+        return {
+          ...copyArr,
+          [currValue.month]: (copyArr[currValue.month] || 0) + 1,
+        };
+      }, []);
+
+      orderList.forEach((item) => {
+        arr.push(item.month);
+      });
+      monthArr = [...new Set(arr)];
+
+      for (let value in monthArr) {
+        let arrFilter;
+        let sum = 0;
+
+        arrFilter = orderList.filter((item) => item.month == monthArr[value]);
+        arrFilter.forEach((item) => {
+          sum = sum + item.totalBill;
+        });
+        sumArr.push(sum);
+      }
+
+      console.log(ordersInYear);
+      res.status(200).send({
+        message: "Orders in a year are retrieved",
+        order: ordersInYear,
+        month: monthArr,
+        revenue: sumArr,
+      });
+    } catch (error) {
+      httpError.serverError(res, error);
     }
   },
 };

@@ -18,14 +18,16 @@ router.get(
 );
 
 router.get(
+  "/detailsFinInYear/chart/orderEachMonth/:id",
+  auth,
+  finController.orderRevenueEachMonth
+);
+
+router.get(
   "/detailsFinInYear/chart/summaryPaymentMethod/:id",
   auth,
   finController.paymentMethodSummarizeChart
 );
-
-// router.put("/updateCate/:id", auth, finController.updateCate);
-
-// router.delete("/:id", auth, finController.deleteCate);
 
 router.post(
   "/finOrder/newFinOrder",

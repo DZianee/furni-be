@@ -16,6 +16,7 @@ const productReviewController = {
         lastname: req.body.lastname,
         avatar: req.body.avatar,
       };
+      console.log(reviewComment);
       product.review.push(reviewComment);
       product.countReviews = product.review.length;
 
@@ -103,12 +104,9 @@ const productReviewController = {
       if (review == null) {
         res.status(404).send({ message: "This review cannot be found" });
       } else {
-        const removeReview = await review.remove(
-          { _id: reviewId},
-          () => {
-            console.log("delete successfully");
-          }
-        );
+        const removeReview = await review.remove({ _id: reviewId }, () => {
+          console.log("delete successfully");
+        });
         product.countReviews = product.review.length;
 
         await product.save();
@@ -127,7 +125,7 @@ const productReviewController = {
   },
   // getReviewsPerUser: async (req, res) => {
   //   try {
-      
+
   //   } catch (error) {
   //     console.log(error)
   //   }

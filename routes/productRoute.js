@@ -8,6 +8,8 @@ const { uploadImg } = require("../middleware/mutler");
 const auth = authMiddlewareController.verifyToken;
 
 //product
+router.get("/relatedProduct", productController.relatedProduct);
+
 router.get("/:categoryId", auth, productController.getAllProducts);
 
 router.get("/", productController.getAll);
@@ -58,7 +60,6 @@ router.get(
   auth,
   productReviewController.detailsReview
 );
-
 
 router.put(
   "/productDetails/:id/Review/:reviewId",

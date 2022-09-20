@@ -11,6 +11,10 @@ router.post("/login", userController.userLogin);
 
 router.post("/register", userController.userRegister);
 
+router.post("/checkInfo", userController.forgotPass);
+
+router.post("/updateForgotPass", userController.updateForgotPass);
+
 router.post("/refreshToken", userController.refreshToken);
 
 router.get("/Customer/:roleId", auth, userController.getAllCustomers);

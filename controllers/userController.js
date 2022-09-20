@@ -4,6 +4,7 @@ const httpErrors = require("../middleware/error");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const APIfeatures = require("../lib/features");
+const { find } = require("../models/userModel");
 
 const userController = {
   refreshCode: "",
@@ -134,6 +135,57 @@ const userController = {
         }
       }
     );
+  },
+  forgotPass: async (req, res) => {
+    let findUser;
+    try {
+      console.log(req.body.email);
+      console.log(req.body.phone);
+      findUser = await userModel.find({
+        email: req.body.email,
+        phone: req.body.phone,
+      });
+      console.log(findUser);
+      if (findUser != "") {
+        res.status(200).send({ message: "user is exist" });
+      } else {
+        httpErrors.notFound(res, error, "user");
+      }
+    } catch (error) {
+      httpErrors.serverError(res, error);
+    }
+  },
+  updateForgotPass: async (req, res) => {
+    let findUser;
+    let newPass = req.body.newPass;
+    try {
+      findUser = await userModel.find({
+        email: req.body.email,
+      });
+      console.log(findUser);
+      const salt = await bcrypt.genSalt(10);
+      const hashed = await bcrypt.hash(newPass, salt);
+      findUser[0].password = hashed;
+
+      let user = {
+        password: findUser[0].password,
+      };
+
+      const updatedPass = await userModel.updateOne(
+        { _id: findUser[0]._id },
+        { $set: user }
+      );
+      console.log(updatedPass);
+      res
+        .status(200)
+        .send({ message: "forgot pass is updated", data: updatedPass });
+    } catch (error) {
+      if (findUser == null) {
+        httpErrors.notFound(res, error, "user");
+      } else {
+        httpErrors.serverError(res, error);
+      }
+    }
   },
   getAllUsers: async (req, res) => {
     let roleId = req.params.customerId;

@@ -455,6 +455,18 @@ const productController = {
       }
     }
   },
+  relatedProduct: async (req, res) => {
+    try {
+      const product = await productModel.find();
+      let result = [];
+      for (let i = 0; i <= 4; i++) {
+        result[i] = product.pop();
+      }
+      res.status(200).send({ data: result });
+    } catch (error) {
+      console.log(error);
+    }
+  },
 };
 
 const run = () => {

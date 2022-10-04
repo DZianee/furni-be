@@ -1,7 +1,6 @@
 const financeModel = require("../models/financeModel");
 const httpError = require("../middleware/error");
 const APIfeatures = require("../lib/features");
-const { all } = require("../routes/financeRoute");
 
 const financeController = {
   newRowLine: async (req, res) => {

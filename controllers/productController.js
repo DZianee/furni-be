@@ -3,6 +3,8 @@ const categoryModel = require("../models/categoryModel");
 const fs = require("fs");
 const httpError = require("../middleware/error");
 const APIfeatures = require("../lib/features");
+const cloudinary = require("../utils/cloudinary");
+const upload = require("../middleware/mutler");
 
 const productController = {
   newProduct: async (req, res) => {
@@ -25,6 +27,9 @@ const productController = {
       category: req.body.category,
       review: req.body.review,
       productImg: req.body.productImg,
+      imgCloudinary: req.body.imgCloudinary,
+      statusOnShelves: req.body.statusOnShelves,
+      is3D: req.body.is3D,
     });
     try {
       const imageName = req.file.filename;
@@ -55,6 +60,7 @@ const productController = {
       }
     }
   },
+  // product in all furniture
   getAll: async (req, res) => {
     let product;
     try {
@@ -78,9 +84,12 @@ const productController = {
           .filtering();
 
         product = await features.query;
+        const result = product.filter(
+          (item) => item.statusOnShelves === "Active"
+        );
         res.status(200).send({
           message: "Get all products successfully",
-          data: product,
+          data: result,
           pageTotals: pageTotals,
         });
       } else {
@@ -91,10 +100,12 @@ const productController = {
           .filtering();
 
         product = await features.query;
-
+        const result = product.filter(
+          (item) => item.statusOnShelves === "Active"
+        );
         res.status(200).send({
           message: "Get all products successfully",
-          data: product,
+          data: result,
           pageTotals: pageTotal,
         });
       }
@@ -102,6 +113,7 @@ const productController = {
       httpError.serverError(res, error);
     }
   },
+  // product in cate management
   getAllProducts: async (req, res) => {
     let cateId = req.params.categoryId;
     let getAll;
@@ -233,6 +245,8 @@ const productController = {
         category: req.body.category,
         review: req.body.review,
         productImg: req.body.productImg,
+        statusOnShelves: req.body.statusOnShelves,
+        is3D: req.body.is3D,
       };
       if (req.file) {
         newImg = req.file.filename;
@@ -247,8 +261,10 @@ const productController = {
       updateProduct.productImg = newImg;
 
       const string = req.body.color;
-      const arr = string.split(",");
-      updateProduct.color = arr;
+      if (typeof string === "string") {
+        const arr = string.split(",");
+        updateProduct.color = arr;
+      }
 
       if (product.status == "OUT OF STOCK") {
         if (updateProduct.importQuantity > product.importQuantity) {
@@ -279,25 +295,28 @@ const productController = {
     let exportQuantity = req.body.exportQuantity;
     let typeAction = req.body.type;
     let result;
-    console.log(id);
     try {
       product = await productModel.findById(id);
-      if (typeAction == "increase") {
-        product.exportQuantity = product.exportQuantity + exportQuantity;
-      } else {
-        product.exportQuantity = product.exportQuantity - exportQuantity;
-      }
-      await product.save();
+      switch (typeAction) {
+        case "increase":
+          if (product.importQuantity > product.exportQuantity) {
+            product.exportQuantity = product.exportQuantity + exportQuantity;
+          } else {
+            product.status = "OUT OF STOCK";
+          }
+          break;
 
-      product = await productModel.findById(id);
-      if (product.importQuantity > product.exportQuantity) {
-        product.status = "IN STOCK";
-        result = await product.save();
-      } else if (product.importQuantity == product.exportQuantity) {
-        product.status = "OUT OF STOCK";
-        result = await product.save();
-      }
+        case "decrease":
+          if (product.importQuantity == product.exportQuantity) {
+            product.status = "IN STOCK";
+            product.exportQuantity = product.exportQuantity - exportQuantity;
+          } else {
+            product.exportQuantity = product.exportQuantity - exportQuantity;
+          }
 
+          break;
+      }
+      result = await product.save();
       res.status(200).send({ message: "check in stock already", data: result });
     } catch (error) {
       if (product == null) {
@@ -359,6 +378,7 @@ const productController = {
       }
     }
   },
+  // product in furni sub-cate
   getProductByCateName: async (req, res) => {
     let id = req.params.cateId;
     let productDetails;
@@ -386,9 +406,13 @@ const productController = {
 
         productList = await features.query;
       }
+      const result = productList.filter(
+        (item) => item.statusOnShelves === "Active"
+      );
+
       res
         .status(200)
-        .send({ message: "Get details successfully", data: productList });
+        .send({ message: "Get details successfully", data: result });
     } catch (error) {
       if (productDetails == null) {
         httpError.notFound(res, error, "product");
@@ -467,6 +491,106 @@ const productController = {
       console.log(error);
     }
   },
+  // update three D img
+  uploadProductImg3D: async (req, res) => {
+    let id = req.params.id;
+    let product;
+    try {
+      product = await productModel.findById(id);
+      const cloudRes = await cloudinary.uploader.upload(req.file.path, {
+        resource_type: "auto",
+        folder: "3D_Storage",
+      });
+      console.log(cloudRes);
+      let updateProduct = {
+        imgCloudinary: cloudRes.secure_url,
+        imgCloudPublicID: cloudRes.public_id,
+      };
+
+      const updatedProduct = await productModel.updateOne(
+        { _id: id },
+        { $set: updateProduct }
+      );
+      res
+        .status(200)
+        .send({ message: "3D img is added", data: updatedProduct });
+      console.log(updatedProduct);
+    } catch (error) {
+      console.log(error);
+      if (product == null) {
+        httpError.notFound(req, error, "product");
+      } else {
+        httpError.serverError(res, error);
+      }
+    }
+  },
+  updateProductImg3D: async (req, res) => {
+    let id = req.params.id;
+    let product;
+    try {
+      product = await productModel.findById(id);
+      await cloudinary.uploader.destroy(product.imgCloudPublicID);
+      
+      const cloudRes = await cloudinary.uploader.upload(req.file.path, {
+        resource_type: "auto",
+        folder: "3D_Storage",
+      });
+      console.log(cloudRes);
+      let updateProduct = {
+        imgCloudinary: cloudRes.secure_url,
+        imgCloudPublicID: cloudRes.public_id,
+      };
+
+      const updatedProduct = await productModel.updateOne(
+        { _id: id },
+        { $set: updateProduct }
+      );
+      res
+        .status(200)
+        .send({ message: "3D img is updated", data: updatedProduct });
+      console.log(updatedProduct);
+    } catch (error) {
+      if (product == null) {
+        httpError.notFound(req, error, "product");
+      } else {
+        httpError.serverError(res, error);
+      }
+    }
+  },
+  unactivateProductImg3D: async (req, res) => {
+    // let id = req.params.id;
+    // let product;
+    // try {
+    //   product = await productModel.findById(id);
+    //   await cloudinary.uploader.destroy(product.imgCloudPublicID);
+      
+    //   const cloudRes = await cloudinary.uploader.upload(req.file.path, {
+    //     resource_type: "auto",
+    //     folder: "3D_Storage",
+    //   });
+    //   console.log(cloudRes);
+    //   let updateProduct = {
+    //     imgCloudinary: cloudRes.secure_url,
+    //     imgCloudPublicID: cloudRes.public_id,
+    //   };
+
+    //   const updatedProduct = await productModel.updateOne(
+    //     { _id: id },
+    //     { $set: updateProduct }
+    //   );
+    //   res
+    //     .status(200)
+    //     .send({ message: "3D img is updated", data: updatedProduct });
+    //   console.log(updatedProduct);
+    //   console.log("run");
+    // } catch (error) {
+    //   if (product == null) {
+    //     httpError.notFound(req, error, "product");
+    //   } else {
+    //     httpError.serverError(res, error);
+    //   }
+    // }
+  },
 };
 
 const run = () => {
@@ -487,6 +611,12 @@ const run = () => {
   console.log(intersection);
   const date = new Date(Date.now());
   console.log(date.getUTCFullYear());
+
+  x = ["fhfgh"];
+  if (typeof x != "string") {
+    console.log("nice");
+  }
+  // console.log(typeof x)
 };
 // run();
 

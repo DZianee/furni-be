@@ -40,6 +40,20 @@ const productSchema = new mongoose.Schema(
       type: String,
       default: "IN STOCK",
     },
+    statusOnShelves: {
+      type: String,
+      default: "Unactive",
+    },
+    is3D: {
+      type: String,
+      default: "Unavailable",
+    },
+    imgCloudinary: {
+      type: String,
+    },
+    imgCloudPublicID: {
+      type: String,
+    },
     type: {
       type: String,
     },

@@ -362,13 +362,35 @@ const orderController = {
       }
     }
   },
+  checkProductInOrder: async (req, res) => {
+    let id = req.params.productId;
+    let arr = [];
+    let tempArr = [];
+    try {
+      const order = await orderModel.find();
+      order.forEach((item) => {
+        tempArr.push(item.cart);
+      });
+      arr = tempArr.flat();
+      const result = arr.some((item) => item.product === id);
+      res.status(200).send({ message: "check is done", data: result });
+    } catch (error) {
+      httpErrors.serverError(res, error);
+    }
+  },
 };
-// const test = () => {
-//   let x = new Date(Date.now());
-//   let day = x.getDate();
+const test = () => {
+  // let x = new Date(Date.now());
+  // let day = x.getDate();
 
-//   console.log(x);
-//   console.log(day);
-// };
+  // console.log(x);
+  // console.log(day);
+
+  const input = [[{ firstName: "Joe" }], [{ firstName: "Kelly" }]];
+
+  const output = input.flat();
+
+  console.log(output);
+};
 // test();
 module.exports = orderController;

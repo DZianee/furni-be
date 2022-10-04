@@ -3,7 +3,7 @@ const productController = require("../controllers/productController");
 const productReviewController = require("../controllers/product.review.controller");
 const reviewReactController = require("../controllers/review.react.controller");
 const authMiddlewareController = require("../middleware/auth");
-const { uploadImg } = require("../middleware/mutler");
+const { uploadImg, productThreeD } = require("../middleware/mutler");
 
 const auth = authMiddlewareController.verifyToken;
 
@@ -46,6 +46,21 @@ router.put(
 );
 
 router.delete("/:id", auth, uploadImg, productController.deleteProduct);
+
+// 3D img
+router.put(
+  "/productDetails/:id/uploadThreeDImg",
+  auth,
+  productThreeD,
+  productController.uploadProductImg3D
+);
+
+router.put(
+  "/productDetails/:id/updateThreeDImg",
+  auth,
+  productThreeD,
+  productController.updateProductImg3D
+);
 
 //review
 

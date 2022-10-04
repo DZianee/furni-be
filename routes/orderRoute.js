@@ -33,4 +33,10 @@ router.get(
   orderController.getUserOrdersPerStatus
 );
 
+// check product exist in order
+router.get(
+  "/checkProductInOrder/:productId",
+  auth,
+  orderController.checkProductInOrder
+);
 module.exports = router;

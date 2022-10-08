@@ -247,6 +247,8 @@ const productController = {
         productImg: req.body.productImg,
         statusOnShelves: req.body.statusOnShelves,
         is3D: req.body.is3D,
+        imgCloudPublicID: req.body.imgCloudPublicID,
+        imgCloudinary: req.body.imgCloudinary,
       };
       if (req.file) {
         newImg = req.file.filename;
@@ -530,7 +532,7 @@ const productController = {
     try {
       product = await productModel.findById(id);
       await cloudinary.uploader.destroy(product.imgCloudPublicID);
-      
+
       const cloudRes = await cloudinary.uploader.upload(req.file.path, {
         resource_type: "auto",
         folder: "3D_Storage",
@@ -563,7 +565,6 @@ const productController = {
     // try {
     //   product = await productModel.findById(id);
     //   await cloudinary.uploader.destroy(product.imgCloudPublicID);
-      
     //   const cloudRes = await cloudinary.uploader.upload(req.file.path, {
     //     resource_type: "auto",
     //     folder: "3D_Storage",
@@ -573,7 +574,6 @@ const productController = {
     //     imgCloudinary: cloudRes.secure_url,
     //     imgCloudPublicID: cloudRes.public_id,
     //   };
-
     //   const updatedProduct = await productModel.updateOne(
     //     { _id: id },
     //     { $set: updateProduct }

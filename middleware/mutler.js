@@ -11,20 +11,20 @@ let storage = {
     },
   }),
 
-  avatarUpload: multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, "./resource/img/avatar");
-    },
-    filename: function (req, file, cb) {
-      cb(null, file.fieldname + "_" + Date.now() + "_" + file.originalname);
-    },
-  }),
+//   avatarUpload: multer.diskStorage({
+//     destination: function (req, file, cb) {
+//       cb(null, "./resource/img/avatar");
+//     },
+//     filename: function (req, file, cb) {
+//       cb(null, file.fieldname + "_" + Date.now() + "_" + file.originalname);
+//     },
+//   }),
 
   productThreeDUpload: multer.diskStorage({}),
 };
 
 let uploadImg = multer({ storage: storage.productUpload }).single("productImg");
-let userAvatar = multer({ storage: storage.avatarUpload }).single("userAvatar");
+// let userAvatar = multer({ storage: storage.avatarUpload }).single("userAvatar");
 let productThreeD = multer({
   storage: storage.productThreeDUpload,
   fileFilter: (req, file, cb) => {
@@ -40,4 +40,4 @@ let productThreeD = multer({
   },
 }).single("imgCloudinary");
 
-module.exports = { uploadImg, userAvatar, productThreeD };
+module.exports = { uploadImg, productThreeD };

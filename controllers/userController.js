@@ -439,8 +439,6 @@ const userController = {
     let getUser;
     try {
       getUser = await userModel.findById(id);
-      console.log(getUser);
-
       const deleteUser = await userModel.findOneAndDelete({ _id: id });
       res.status(200).send({ data: deleteUser });
     } catch (error) {

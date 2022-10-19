@@ -29,6 +29,8 @@ router.get("/userDetails/:id", auth, userController.getDetailsUserComment);
 
 router.put("/updateUser/:id", userController.updateUser);
 
+router.put("/addTempOrder/:id", userController.addTempOrder);
+
 router.delete("/removeStaff/:id", auth, userController.deleteStaff);
 
 module.exports = router;

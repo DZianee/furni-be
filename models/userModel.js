@@ -58,6 +58,9 @@ const userSchema = new mongoose.Schema(
         ref: "Order_Model",
       },
     ],
+    tempOrder: {
+      type: [Object],
+    },
   },
   {
     timestamps: true,
@@ -72,5 +75,4 @@ userSchema.index({
   status: "text",
 });
 
-
-module.exports =  mongoose.model("User_Model", userSchema);
+module.exports = mongoose.model("User_Model", userSchema);

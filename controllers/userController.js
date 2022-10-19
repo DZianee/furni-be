@@ -4,7 +4,6 @@ const httpErrors = require("../middleware/error");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const APIfeatures = require("../lib/features");
-const { find } = require("../models/userModel");
 
 const userController = {
   refreshCode: "",
@@ -28,6 +27,7 @@ const userController = {
         role: req.body.role,
         status: req.body.status,
         order: req.body.order,
+        tempOrder: req.body.tempOrder,
       });
 
       console.log(user);
@@ -57,6 +57,9 @@ const userController = {
       if (!validPassword) {
         res.status(404).send({ message: "Password is wrong" });
       }
+      if (user.status != "Active") {
+        httpErrors.notFound(res, error, "user");
+      }
       if (user && validPassword) {
         user.lastLogin = Date.now();
         await user.save();
@@ -83,6 +86,7 @@ const userController = {
             firstname: user.firstname,
             lastname: user.lastname,
             role: user.role,
+            tempOrder: user.tempOrder,
           },
         });
       }
@@ -335,6 +339,7 @@ const userController = {
             city: getDetails.address.city,
           },
           order: getDetails.order,
+          tempOrder: getDetails.tempOrder
         },
       });
     } catch (error) {
@@ -426,6 +431,33 @@ const userController = {
           .status(200)
           .send({ message: "Update user successfully", data: updatedUser });
       }
+    } catch (error) {
+      if (getUser == null) {
+        httpErrors.notFound(res, error, "user");
+      } else {
+        httpErrors.serverError(res, error);
+      }
+    }
+  },
+  //add temp order
+  addTempOrder: async (req, res) => {
+    let id = req.params.id;
+    let getUser;
+    let user = null;
+    try {
+      getUser = await userModel.findById(id);
+
+      user = {
+        tempOrder: req.body.tempOrder,
+      };
+      
+      const updatedUser = await userModel.updateOne(
+        { _id: id },
+        { $set: user }
+      );
+      res
+        .status(200)
+        .send({ message: "Update temp order successfully", data: updatedUser });
     } catch (error) {
       if (getUser == null) {
         httpErrors.notFound(res, error, "user");

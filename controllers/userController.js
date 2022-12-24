@@ -457,6 +457,34 @@ const userController = {
       );
       res
         .status(200)
+        .send({ message: "Add temp order successfully", data: updatedUser });
+    } catch (error) {
+      if (getUser == null) {
+        httpErrors.notFound(res, error, "user");
+      } else {
+        httpErrors.serverError(res, error);
+      }
+    }
+  },
+  //update temp order
+  updateTempOrder: async (req, res) => {
+    let id = req.params.id;
+    let getUser;
+    let user = null;
+
+    try {
+      getUser = await userModel.findById(id);
+
+      user = {
+        tempOrder: req.body.tempOrder,
+      };
+      
+      const updatedUser = await userModel.updateOne(
+        { _id: id },
+        { $set: user }
+      );
+      res
+        .status(200)
         .send({ message: "Update temp order successfully", data: updatedUser });
     } catch (error) {
       if (getUser == null) {

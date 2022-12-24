@@ -88,8 +88,8 @@ const roleController = {
     let user;
     try {
       user = await userModel.find({ role: id });
-      console.log(user);
-      console.log(typeof user);
+      // console.log(user);
+      // console.log(typeof user);
       if (user == "") {
         res.status(202).send({ message: "Available to delete" });
       } else {

@@ -31,6 +31,8 @@ router.put("/updateUser/:id", userController.updateUser);
 
 router.put("/addTempOrder/:id", userController.addTempOrder);
 
+router.put("/updateTempOrder/:id", userController.updateTempOrder);
+
 router.delete("/removeStaff/:id", auth, userController.deleteStaff);
 
 module.exports = router;
